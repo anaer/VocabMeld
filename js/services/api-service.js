@@ -113,13 +113,25 @@ ${filteredText}
    */
   reconstructTextWithWords(text, targetWords) {
     const targetWordSet = new Set(targetWords.map(w => w.toLowerCase()));
+    const lowerText = text.toLowerCase();
     const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
 
     const relevantSentences = sentences.filter(sentence => {
+      const lowerSentence = sentence.toLowerCase();
+      // 检查英文单词
       const words = sentence.match(/\b[a-zA-Z]{3,}\b/g) || [];
-      const chineseWords = sentence.match(/[\u4e00-\u9fff]{2,4}/g) || [];
-      const allWords = [...words, ...chineseWords];
-      return allWords.some(word => targetWordSet.has(word.toLowerCase()));
+      const hasEnglishMatch = words.some(word => targetWordSet.has(word.toLowerCase()));
+      
+      // 检查中文短语（直接检查是否包含目标词汇）
+      const hasChineseMatch = Array.from(targetWordSet).some(word => {
+        // 只检查中文词汇
+        if (/[\u4e00-\u9fff]/.test(word)) {
+          return lowerSentence.includes(word);
+        }
+        return false;
+      });
+      
+      return hasEnglishMatch || hasChineseMatch;
     });
 
     return relevantSentences.join('. ').trim() + (relevantSentences.length > 0 ? '.' : '');
@@ -240,14 +252,24 @@ ${filteredText}
       let allResults = this.parseApiResponse(content);
 
       // 先缓存所有词汇（包括所有难度级别），供不同难度设置的用户使用
-      const newCacheItems = allResults.map(item => ({
-        word: item.original,
-        sourceLang,
-        targetLang,
-        translation: item.translation,
-        phonetic: item.phonetic,
-        difficulty: item.difficulty || 'B1' // 默认 B1
-      }));
+      // 过滤掉2字以下的中文词汇（避免简单词影响语境）
+      const newCacheItems = allResults
+        .filter(item => {
+          // 对于中文，不存储1个字的内容（即只存储2个字及以上的词汇）
+          const isChinese = /[\u4e00-\u9fff]/.test(item.original);
+          if (isChinese && item.original.length < 2) {
+            return false; // 跳过1个字的中文词汇（只存储2个字及以上的）
+          }
+          return true;
+        })
+        .map(item => ({
+          word: item.original,
+          sourceLang,
+          targetLang,
+          translation: item.translation,
+          phonetic: item.phonetic,
+          difficulty: item.difficulty || 'B1' // 默认 B1
+        }));
       
       await cacheService.setMany(newCacheItems);
       
@@ -299,10 +321,29 @@ ${filteredText}
    * @returns {string[]} - 词汇数组
    */
   extractWords(text) {
-    // 匹配英文单词和中文词汇
+    // 匹配英文单词
     const englishWords = text.match(/\b[a-zA-Z]{3,}\b/g) || [];
-    const chineseWords = text.match(/[\u4e00-\u9fff]{2,4}/g) || [];
-    return [...new Set([...englishWords, ...chineseWords])];
+    
+    // 对于中文，提取有意义的短语（2-4个字符）
+    // 注意：这里只提取用于缓存检查，实际翻译由AI决定返回哪些词汇
+    // 提取2-4个字符的短语（避免提取过多无意义的片段）
+    const chinesePhrases = [];
+    const chineseText = text.match(/[\u4e00-\u9fff]+/g) || [];
+    
+    // 从中文文本中提取2-4个字符的短语（滑动窗口，步长为1）
+    for (const phrase of chineseText) {
+      if (phrase.length >= 2) {
+        // 提取2-4个字符的短语
+        for (let len = 2; len <= Math.min(4, phrase.length); len++) {
+          for (let i = 0; i <= phrase.length - len; i++) {
+            const subPhrase = phrase.substring(i, i + len);
+            chinesePhrases.push(subPhrase);
+          }
+        }
+      }
+    }
+    
+    return [...new Set([...englishWords, ...chinesePhrases])];
   }
 
   /**
