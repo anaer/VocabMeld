@@ -113,6 +113,7 @@
           intensity: result.intensity || 'medium',
           autoProcess: result.autoProcess ?? false,
           showPhonetic: result.showPhonetic ?? true,
+          translationStyle: result.translationStyle || 'translation-original',
           enabled: result.enabled ?? true,
           blacklist: result.blacklist || [],
           whitelist: result.whitelist || [],
@@ -363,7 +364,28 @@
     wrapper.setAttribute('data-translation', translation);
     wrapper.setAttribute('data-phonetic', phonetic || '');
     wrapper.setAttribute('data-difficulty', difficulty || 'B1');
-    wrapper.innerHTML = `<span class="vocabmeld-word">${translation}</span><span class="vocabmeld-original">(${original})</span>`;
+    
+    // 根据配置的样式生成不同的HTML
+    const style = config.translationStyle || 'translation-original';
+    let innerHTML = '';
+    
+    switch (style) {
+      case 'translation-only':
+        // 只显示译文
+        innerHTML = `<span class="vocabmeld-word">${translation}</span>`;
+        break;
+      case 'original-translation':
+        // 原文(译文)
+        innerHTML = `<span class="vocabmeld-original">${original}</span><span class="vocabmeld-word">(${translation})</span>`;
+        break;
+      case 'translation-original':
+      default:
+        // 译文(原文) - 默认样式
+        innerHTML = `<span class="vocabmeld-word">${translation}</span><span class="vocabmeld-original">(${original})</span>`;
+        break;
+    }
+    
+    wrapper.innerHTML = innerHTML;
     return wrapper;
   }
 
@@ -1300,8 +1322,8 @@ ${uncached.join(', ')}
           if (changes.enabled?.newValue === false) {
             restoreAll();
           }
-          // 难度或强度变化时，需要重新处理页面
-          if (changes.difficultyLevel || changes.intensity) {
+          // 难度、强度或样式变化时，需要重新处理页面
+          if (changes.difficultyLevel || changes.intensity || changes.translationStyle) {
             restoreAll(); // 先恢复页面（会清除 processedFingerprints）
             if (config.enabled) {
               processPage(); // 重新处理

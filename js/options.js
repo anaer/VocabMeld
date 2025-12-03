@@ -46,6 +46,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 行为设置
     autoProcess: document.getElementById('autoProcess'),
     showPhonetic: document.getElementById('showPhonetic'),
+    translationStyleRadios: document.querySelectorAll('input[name="translationStyle"]'),
 
     // 站点规则
     blacklistInput: document.getElementById('blacklistInput'),
@@ -106,6 +107,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       // 行为设置
       elements.autoProcess.checked = result.autoProcess ?? false;
       elements.showPhonetic.checked = result.showPhonetic ?? true;
+      
+      const translationStyle = result.translationStyle || 'translation-original';
+      elements.translationStyleRadios.forEach(radio => {
+        radio.checked = radio.value === translationStyle;
+      });
       
       // 站点规则
       elements.blacklistInput.value = (result.blacklist || []).join('\n');
@@ -334,6 +340,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       intensity: document.querySelector('input[name="intensity"]:checked').value,
       autoProcess: elements.autoProcess.checked,
       showPhonetic: elements.showPhonetic.checked,
+      translationStyle: document.querySelector('input[name="translationStyle"]:checked').value,
       blacklist: elements.blacklistInput.value.split('\n').filter(s => s.trim()),
       whitelist: elements.whitelistInput.value.split('\n').filter(s => s.trim())
     };
@@ -378,6 +385,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // 单选按钮 - 改变时保存
     elements.intensityRadios.forEach(radio => {
+      radio.addEventListener('change', () => debouncedSave(200));
+    });
+
+    elements.translationStyleRadios.forEach(radio => {
       radio.addEventListener('change', () => debouncedSave(200));
     });
 

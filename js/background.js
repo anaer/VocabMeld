@@ -19,6 +19,7 @@ chrome.runtime.onInstalled.addListener((details) => {
       intensity: 'medium',
       autoProcess: false,
       showPhonetic: true,
+      translationStyle: 'translation-original',
       enabled: true,
       blacklist: [],
       whitelist: [],
