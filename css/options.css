@@ -260,33 +260,34 @@ body {
   color: var(--text-primary);
 }
 
-/* Preset Buttons */
-.preset-buttons {
+/* Config Selector */
+.config-selector {
   display: flex;
-  flex-wrap: wrap;
+  align-items: center;
   gap: 8px;
 }
 
-.preset-btn {
-  padding: 8px 16px;
+.config-selector select {
+  flex: 1;
+  padding: 10px 14px;
   background: var(--bg-secondary);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  color: var(--text-secondary);
-  font-size: 13px;
+  color: var(--text-primary);
+  font-size: 14px;
   cursor: pointer;
   transition: var(--transition);
 }
 
-.preset-btn:hover {
+.config-selector select:focus {
+  outline: none;
   border-color: var(--primary);
-  color: var(--text-primary);
 }
 
-.preset-btn.active {
-  background: var(--primary);
-  border-color: var(--primary);
-  color: white;
+.btn-icon-danger:hover {
+  background: var(--danger) !important;
+  border-color: var(--danger) !important;
+  color: white !important;
 }
 
 /* Form Actions */

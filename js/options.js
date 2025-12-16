@@ -3,14 +3,18 @@
  */
 
 document.addEventListener('DOMContentLoaded', async () => {
-  // API 预设
-  const API_PRESETS = {
-    openai: { endpoint: 'https://api.openai.com/v1/chat/completions', model: 'gpt-4o-mini' },
-    deepseek: { endpoint: 'https://api.deepseek.com/chat/completions', model: 'deepseek-chat' },
-    moonshot: { endpoint: 'https://api.moonshot.cn/v1/chat/completions', model: 'moonshot-v1-8k' },
-    groq: { endpoint: 'https://api.groq.com/openai/v1/chat/completions', model: 'llama-3.1-8b-instant' },
-    ollama: { endpoint: 'http://localhost:11434/v1/chat/completions', model: 'qwen2.5:7b' }
+  // 默认 API 配置
+  const DEFAULT_API_CONFIGS = {
+    'OpenAI': { endpoint: 'https://api.openai.com/v1/chat/completions', apiKey: '', model: 'gpt-4o-mini' },
+    'DeepSeek': { endpoint: 'https://api.deepseek.com/chat/completions', apiKey: '', model: 'deepseek-chat' },
+    'Moonshot': { endpoint: 'https://api.moonshot.cn/v1/chat/completions', apiKey: '', model: 'moonshot-v1-8k' },
+    'Groq': { endpoint: 'https://api.groq.com/openai/v1/chat/completions', apiKey: '', model: 'llama-3.1-8b-instant' },
+    'Ollama': { endpoint: 'http://localhost:11434/v1/chat/completions', apiKey: '', model: 'qwen2.5:7b' }
   };
+
+  // 当前配置状态
+  let apiConfigs = {};
+  let currentConfigName = '';
 
   const CEFR_LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
 
@@ -28,7 +32,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     sections: document.querySelectorAll('.settings-section'),
 
     // API 配置
-    presetBtns: document.querySelectorAll('.preset-btn'),
+    apiConfigSelect: document.getElementById('apiConfigSelect'),
+    newConfigBtn: document.getElementById('newConfigBtn'),
+    saveConfigBtn: document.getElementById('saveConfigBtn'),
+    deleteConfigBtn: document.getElementById('deleteConfigBtn'),
+    configName: document.getElementById('configName'),
     apiEndpoint: document.getElementById('apiEndpoint'),
     apiKey: document.getElementById('apiKey'),
     modelName: document.getElementById('modelName'),
@@ -155,8 +163,167 @@ document.addEventListener('DOMContentLoaded', async () => {
     return prefixMap[langCode] || langCode.split('-')[0];
   }
 
+  // 加载 API 配置列表
+  function loadApiConfigs(callback) {
+    chrome.storage.sync.get(['apiConfigs', 'currentApiConfig'], (result) => {
+      // 如果没有配置，使用默认配置
+      apiConfigs = result.apiConfigs || { ...DEFAULT_API_CONFIGS };
+      currentConfigName = result.currentApiConfig || Object.keys(apiConfigs)[0] || '';
+      
+      updateConfigSelect();
+      
+      if (callback) callback();
+    });
+  }
+
+  // 更新配置下拉框
+  function updateConfigSelect() {
+    const select = elements.apiConfigSelect;
+    select.innerHTML = '';
+    
+    // 添加已有配置
+    Object.keys(apiConfigs).forEach(name => {
+      const option = document.createElement('option');
+      option.value = name;
+      option.textContent = name;
+      if (name === currentConfigName) {
+        option.selected = true;
+      }
+      select.appendChild(option);
+    });
+    
+    // 同步更新配置名称输入框
+    if (currentConfigName) {
+      elements.configName.value = currentConfigName;
+    }
+  }
+
+  // 应用选中的配置
+  function applyConfig(name) {
+    if (!apiConfigs[name]) {
+      // 新建配置 - 清空所有字段
+      elements.configName.value = '';
+      elements.apiEndpoint.value = '';
+      elements.apiKey.value = '';
+      elements.modelName.value = '';
+      currentConfigName = '';
+      return;
+    }
+    
+    const config = apiConfigs[name];
+    elements.configName.value = name;
+    elements.apiEndpoint.value = config.endpoint || '';
+    elements.apiKey.value = config.apiKey || '';
+    elements.modelName.value = config.model || '';
+    currentConfigName = name;
+  }
+
+  // 保存当前配置
+  function saveCurrentConfig() {
+    const configName = elements.configName.value.trim();
+    const endpoint = elements.apiEndpoint.value.trim();
+    const apiKey = elements.apiKey.value.trim();
+    const model = elements.modelName.value.trim();
+    
+    // 非空检测
+    if (!configName) {
+      showConfigToast('请输入配置名称', true);
+      elements.configName.focus();
+      return;
+    }
+    if (!endpoint) {
+      showConfigToast('请输入 API 端点', true);
+      elements.apiEndpoint.focus();
+      return;
+    }
+    if (!model) {
+      showConfigToast('请输入模型名称', true);
+      elements.modelName.focus();
+      return;
+    }
+    
+    // 检查是否是重命名（当前选中的配置名与输入的不同）
+    const selectedConfig = elements.apiConfigSelect.value;
+    if (selectedConfig && selectedConfig !== configName && apiConfigs[selectedConfig]) {
+      // 删除旧名称的配置
+      delete apiConfigs[selectedConfig];
+    }
+    
+    // 保存配置
+    apiConfigs[configName] = {
+      endpoint: endpoint,
+      apiKey: apiKey,
+      model: model
+    };
+    
+    currentConfigName = configName;
+    
+    // 保存到存储
+    chrome.storage.sync.set({ 
+      apiConfigs: apiConfigs,
+      currentApiConfig: currentConfigName,
+      apiEndpoint: endpoint,
+      apiKey: apiKey,
+      modelName: model
+    }, () => {
+      updateConfigSelect();
+      showConfigToast(`配置 "${configName}" 已保存`);
+    });
+  }
+
+  // 删除配置
+  function deleteCurrentConfig() {
+    const configName = elements.apiConfigSelect.value;
+    if (configName === '_new') return;
+    
+    if (Object.keys(apiConfigs).length <= 1) {
+      alert('至少保留一个配置');
+      return;
+    }
+    
+    if (!confirm(`确定要删除配置 "${configName}" 吗？`)) return;
+    
+    delete apiConfigs[configName];
+    currentConfigName = Object.keys(apiConfigs)[0];
+    
+    // 保存到存储并应用新配置
+    chrome.storage.sync.set({ 
+      apiConfigs: apiConfigs,
+      currentApiConfig: currentConfigName
+    }, () => {
+      updateConfigSelect();
+      applyConfig(currentConfigName);
+      // 同时更新当前使用的 API 配置
+      const config = apiConfigs[currentConfigName];
+      chrome.storage.sync.set({
+        apiEndpoint: config.endpoint,
+        apiKey: config.apiKey,
+        modelName: config.model
+      });
+      showConfigToast(`配置 "${configName}" 已删除`);
+    });
+  }
+
+  // 显示配置操作提示
+  function showConfigToast(message, isError = false) {
+    elements.testResult.textContent = message;
+    elements.testResult.className = isError ? 'test-result error' : 'test-result success';
+    setTimeout(() => {
+      elements.testResult.textContent = '';
+      elements.testResult.className = 'test-result';
+    }, 2000);
+  }
+
   // 加载配置
   async function loadSettings() {
+    // 先加载 API 配置列表
+    loadApiConfigs(() => {
+      // 应用当前选中的配置
+      if (currentConfigName && apiConfigs[currentConfigName]) {
+        applyConfig(currentConfigName);
+      }
+    });
+    
     chrome.storage.sync.get(null, (result) => {
       // 主题
       const theme = result.theme || 'dark';
@@ -165,10 +332,12 @@ document.addEventListener('DOMContentLoaded', async () => {
         radio.checked = radio.value === theme;
       });
 
-      // API 配置
-      elements.apiEndpoint.value = result.apiEndpoint || API_PRESETS.deepseek.endpoint;
-      elements.apiKey.value = result.apiKey || '';
-      elements.modelName.value = result.modelName || API_PRESETS.deepseek.model;
+      // API 配置（如果没有配置列表，使用直接存储的值作为后备）
+      if (!result.apiConfigs) {
+        elements.apiEndpoint.value = result.apiEndpoint || DEFAULT_API_CONFIGS['DeepSeek'].endpoint;
+        elements.apiKey.value = result.apiKey || '';
+        elements.modelName.value = result.modelName || DEFAULT_API_CONFIGS['DeepSeek'].model;
+      }
       
       // 学习偏好
       elements.nativeLanguage.value = result.nativeLanguage || 'zh-CN';
@@ -590,22 +759,47 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
     });
 
-    // 预设按钮
-    elements.presetBtns.forEach(btn => {
-      btn.addEventListener('click', () => {
-        const preset = API_PRESETS[btn.dataset.preset];
-        if (preset) {
-          elements.apiEndpoint.value = preset.endpoint;
-          elements.modelName.value = preset.model;
-
-          elements.presetBtns.forEach(b => b.classList.remove('active'));
-          btn.classList.add('active');
-
-          // 预设按钮改变时立即保存
-          debouncedSave(200);
-        }
-      });
+    // 配置选择器
+    elements.apiConfigSelect.addEventListener('change', () => {
+      const selectedValue = elements.apiConfigSelect.value;
+      applyConfig(selectedValue);
+      // 切换配置时保存当前使用的配置
+      if (apiConfigs[selectedValue]) {
+        chrome.storage.sync.set({ 
+          currentApiConfig: selectedValue,
+          apiEndpoint: elements.apiEndpoint.value,
+          apiKey: elements.apiKey.value,
+          modelName: elements.modelName.value
+        });
+      }
     });
+
+    // 新建配置按钮
+    elements.newConfigBtn.addEventListener('click', () => {
+      // 添加临时的"新建配置"选项并选中
+      const select = elements.apiConfigSelect;
+      let newOption = select.querySelector('option[value="_new"]');
+      if (!newOption) {
+        newOption = document.createElement('option');
+        newOption.value = '_new';
+        newOption.textContent = '— 新建配置 —';
+        select.insertBefore(newOption, select.firstChild);
+      }
+      select.value = '_new';
+      
+      elements.configName.value = '';
+      elements.apiEndpoint.value = '';
+      elements.apiKey.value = '';
+      elements.modelName.value = '';
+      currentConfigName = '';
+      elements.configName.focus();
+    });
+
+    // 保存配置按钮
+    elements.saveConfigBtn.addEventListener('click', saveCurrentConfig);
+    
+    // 删除配置按钮
+    elements.deleteConfigBtn.addEventListener('click', deleteCurrentConfig);
 
     // 切换 API 密钥可见性
     elements.toggleApiKey.addEventListener('click', () => {

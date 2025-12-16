@@ -69,14 +69,25 @@
         <p class="section-desc">配置用于翻译的 AI 服务 API</p>
 
         <div class="form-group">
-          <label>预设服务</label>
-          <div class="preset-buttons">
-            <button class="preset-btn" data-preset="openai">OpenAI</button>
-            <button class="preset-btn" data-preset="deepseek">DeepSeek</button>
-            <button class="preset-btn" data-preset="moonshot">Moonshot</button>
-            <button class="preset-btn" data-preset="groq">Groq</button>
-            <button class="preset-btn" data-preset="ollama">Ollama</button>
+          <label>配置</label>
+          <div class="config-selector">
+            <select id="apiConfigSelect"></select>
+            <button type="button" class="btn-icon" id="newConfigBtn" title="新建配置">
+              <svg viewBox="0 0 24 24" width="18" height="18">
+                <path fill="currentColor" d="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z"/>
+              </svg>
+            </button>
+            <button type="button" class="btn-icon btn-icon-danger" id="deleteConfigBtn" title="删除配置">
+              <svg viewBox="0 0 24 24" width="18" height="18">
+                <path fill="currentColor" d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"/>
+              </svg>
+            </button>
           </div>
+        </div>
+
+        <div class="form-group">
+          <label for="configName">配置名称</label>
+          <input type="text" id="configName" placeholder="输入配置名称">
         </div>
 
         <div class="form-group">
@@ -102,6 +113,12 @@
         </div>
 
         <div class="form-actions">
+          <button class="btn btn-primary" id="saveConfigBtn">
+            <svg viewBox="0 0 24 24" width="18" height="18">
+              <path fill="currentColor" d="M15,9H5V5H15M12,19A3,3 0 0,1 9,16A3,3 0 0,1 12,13A3,3 0 0,1 15,16A3,3 0 0,1 12,19M17,3H5C3.89,3 3,3.9 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V7L17,3Z"/>
+            </svg>
+            保存配置
+          </button>
           <button class="btn btn-secondary" id="testConnectionBtn">
             <svg viewBox="0 0 24 24" width="18" height="18">
               <path fill="currentColor" d="M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22A10,10 0 0,1 2,12A10,10 0 0,1 12,2M11,16.5L18,9.5L16.59,8.09L11,13.67L7.91,10.59L6.5,12L11,16.5Z"/>
