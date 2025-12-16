@@ -103,7 +103,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // 加载可用声音列表（只显示学习语言相关的声音）
-  function loadVoices(selectedVoice) {
+  function loadVoices(selectedVoice, resetIfMismatch = false) {
     chrome.runtime.sendMessage({ action: 'getVoices' }, (response) => {
       const voices = response?.voices || [];
       const select = elements.ttsVoice;
@@ -128,7 +128,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         option.textContent = '无可用声音';
         option.disabled = true;
         select.appendChild(option);
+        // 清空存储的声音设置
+        if (resetIfMismatch) {
+          chrome.storage.sync.set({ ttsVoice: '' });
+        }
         return;
+      }
+      
+      // 检查选中的声音是否与当前语言匹配
+      const selectedVoiceMatches = selectedVoice && matchingVoices.some(v => v.voiceName === selectedVoice);
+      
+      // 如果需要重置且不匹配，清空声音设置
+      if (resetIfMismatch && selectedVoice && !selectedVoiceMatches) {
+        selectedVoice = '';
+        chrome.storage.sync.set({ ttsVoice: '' });
       }
       
       // 添加匹配的声音选项
@@ -663,8 +676,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 学习语言改变时，重新加载声音列表
     elements.targetLanguage.addEventListener('change', () => {
       debouncedSave(200);
-      // 重新加载声音列表
-      loadVoices(elements.ttsVoice.value);
+      // 重新加载声音列表，并重置不匹配的声音设置
+      loadVoices(elements.ttsVoice.value, true);
     });
 
     // 滑块 - 改变时保存
