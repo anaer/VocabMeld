@@ -98,7 +98,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     statHitRate: document.getElementById('statHitRate'),
     cacheProgress: document.getElementById('cacheProgress'),
     resetTodayBtn: document.getElementById('resetTodayBtn'),
-    resetAllBtn: document.getElementById('resetAllBtn')
+    resetAllBtn: document.getElementById('resetAllBtn'),
+    
+    // 导入导出
+    exportDataBtn: document.getElementById('exportDataBtn'),
+    importDataBtn: document.getElementById('importDataBtn'),
+    importFileInput: document.getElementById('importFileInput'),
+    exportSettings: document.getElementById('exportSettings'),
+    exportWords: document.getElementById('exportWords'),
+    exportStats: document.getElementById('exportStats'),
+    exportCache: document.getElementById('exportCache')
   };
 
   // 应用主题
@@ -1038,6 +1047,131 @@ document.addEventListener('DOMContentLoaded', async () => {
           debouncedSave(200);
         });
       }
+    });
+
+    // 导出数据
+    elements.exportDataBtn.addEventListener('click', async () => {
+      const exportData = {
+        version: '1.0',
+        exportDate: new Date().toISOString()
+      };
+
+      // 获取 sync 存储的数据
+      const syncData = await new Promise(resolve => chrome.storage.sync.get(null, resolve));
+      
+      // 根据勾选项添加数据
+      if (elements.exportSettings.checked) {
+        exportData.settings = {
+          apiEndpoint: syncData.apiEndpoint,
+          apiKey: syncData.apiKey,
+          modelName: syncData.modelName,
+          apiConfigs: syncData.apiConfigs,
+          currentApiConfig: syncData.currentApiConfig,
+          nativeLanguage: syncData.nativeLanguage,
+          targetLanguage: syncData.targetLanguage,
+          difficultyLevel: syncData.difficultyLevel,
+          intensity: syncData.intensity,
+          autoProcess: syncData.autoProcess,
+          showPhonetic: syncData.showPhonetic,
+          showAddMemorize: syncData.showAddMemorize,
+          cacheMaxSize: syncData.cacheMaxSize,
+          translationStyle: syncData.translationStyle,
+          theme: syncData.theme,
+          ttsVoice: syncData.ttsVoice,
+          ttsRate: syncData.ttsRate,
+          siteMode: syncData.siteMode,
+          excludedSites: syncData.excludedSites,
+          allowedSites: syncData.allowedSites
+        };
+      }
+      
+      if (elements.exportWords.checked) {
+        exportData.learnedWords = syncData.learnedWords || [];
+        exportData.memorizeList = syncData.memorizeList || [];
+      }
+      
+      if (elements.exportStats.checked) {
+        exportData.stats = {
+          totalWords: syncData.totalWords,
+          todayWords: syncData.todayWords,
+          lastResetDate: syncData.lastResetDate,
+          cacheHits: syncData.cacheHits,
+          cacheMisses: syncData.cacheMisses
+        };
+      }
+      
+      if (elements.exportCache.checked) {
+        const localData = await new Promise(resolve => chrome.storage.local.get('vocabmeld_word_cache', resolve));
+        exportData.cache = localData.vocabmeld_word_cache || [];
+      }
+
+      // 下载文件
+      const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `vocabmeld-backup-${new Date().toISOString().split('T')[0]}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+
+    // 导入数据
+    elements.importDataBtn.addEventListener('click', () => {
+      elements.importFileInput.click();
+    });
+
+    elements.importFileInput.addEventListener('change', async (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      try {
+        const text = await file.text();
+        const data = JSON.parse(text);
+
+        if (!data.version) {
+          alert('无效的备份文件');
+          return;
+        }
+
+        if (!confirm('导入将覆盖现有数据，确定继续吗？')) {
+          return;
+        }
+
+        const syncUpdates = {};
+        const localUpdates = {};
+
+        if (data.settings) {
+          Object.assign(syncUpdates, data.settings);
+        }
+        if (data.learnedWords) {
+          syncUpdates.learnedWords = data.learnedWords;
+        }
+        if (data.memorizeList) {
+          syncUpdates.memorizeList = data.memorizeList;
+        }
+        if (data.stats) {
+          Object.assign(syncUpdates, data.stats);
+        }
+        if (data.cache) {
+          localUpdates.vocabmeld_word_cache = data.cache;
+        }
+
+        // 保存数据
+        if (Object.keys(syncUpdates).length > 0) {
+          await new Promise(resolve => chrome.storage.sync.set(syncUpdates, resolve));
+        }
+        if (Object.keys(localUpdates).length > 0) {
+          await new Promise(resolve => chrome.storage.local.set(localUpdates, resolve));
+        }
+
+        alert('导入成功！页面将刷新。');
+        location.reload();
+      } catch (err) {
+        alert('导入失败：' + err.message);
+      }
+
+      // 重置文件输入
+      e.target.value = '';
     });
 
     // 添加自动保存事件监听器

@@ -46,17 +46,11 @@
           </svg>
           词汇管理
         </a>
-        <a href="#stats" class="nav-item" data-section="stats">
+        <a href="#more" class="nav-item" data-section="more">
           <svg viewBox="0 0 24 24" width="20" height="20">
-            <path fill="currentColor" d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/>
+            <path fill="currentColor" d="M12,16A2,2 0 0,1 14,18A2,2 0 0,1 12,20A2,2 0 0,1 10,18A2,2 0 0,1 12,16M12,10A2,2 0 0,1 14,12A2,2 0 0,1 12,14A2,2 0 0,1 10,12A2,2 0 0,1 12,10M12,4A2,2 0 0,1 14,6A2,2 0 0,1 12,8A2,2 0 0,1 10,6A2,2 0 0,1 12,4Z"/>
           </svg>
-          统计数据
-        </a>
-        <a href="#about" class="nav-item" data-section="about">
-          <svg viewBox="0 0 24 24" width="20" height="20">
-            <path fill="currentColor" d="M13,9H11V7H13M13,17H11V11H13M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z"/>
-          </svg>
-          关于
+          更多
         </a>
       </nav>
     </aside>
@@ -419,7 +413,38 @@
       <!-- 词汇管理 -->
       <section id="words" class="settings-section">
         <h2>词汇管理</h2>
-        <p class="section-desc">管理已学会和需记忆的词汇</p>
+        <p class="section-desc">管理已学会和需记忆的词汇，查看学习进度</p>
+
+        <div class="stats-overview">
+          <div class="stat-box">
+            <div class="stat-number" id="statTotalWords">0</div>
+            <div class="stat-label">累计接触</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-number" id="statTodayWords">0</div>
+            <div class="stat-label">今日接触</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-number" id="statLearnedWords">0</div>
+            <div class="stat-label">已学会</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-number" id="statMemorizeWords">0</div>
+            <div class="stat-label">需记忆</div>
+          </div>
+        </div>
+
+        <div class="cache-overview">
+          <div class="cache-bar">
+            <div class="cache-progress" id="cacheProgress"></div>
+          </div>
+          <div class="cache-info">
+            <span>已缓存: <strong id="statCacheSize">0</strong></span>
+            <span>命中率: <strong id="statHitRate">0%</strong></span>
+            <button class="btn btn-text-small" id="resetTodayBtn">重置今日</button>
+            <button class="btn btn-text-small btn-danger-text" id="resetAllBtn">重置全部</button>
+          </div>
+        </div>
 
         <div class="word-tabs">
           <button class="word-tab active" data-tab="learned">已学会 (<span id="learnedTabCount">0</span>)</button>
@@ -509,105 +534,84 @@
         </div>
       </section>
 
-      <!-- 统计数据 -->
-      <section id="stats" class="settings-section">
-        <h2>统计数据</h2>
-        <p class="section-desc">查看你的学习进度</p>
-
-        <div class="stats-overview">
-          <div class="stat-box">
-            <div class="stat-number" id="statTotalWords">0</div>
-            <div class="stat-label">累计接触词汇</div>
-          </div>
-          <div class="stat-box">
-            <div class="stat-number" id="statTodayWords">0</div>
-            <div class="stat-label">今日接触词汇</div>
-          </div>
-          <div class="stat-box">
-            <div class="stat-number" id="statLearnedWords">0</div>
-            <div class="stat-label">已学会词汇</div>
-          </div>
-          <div class="stat-box">
-            <div class="stat-number" id="statMemorizeWords">0</div>
-            <div class="stat-label">需记忆词汇</div>
-          </div>
-        </div>
-
-        <div class="cache-overview">
-          <h3>缓存状态</h3>
-          <div class="cache-bar">
-            <div class="cache-progress" id="cacheProgress"></div>
-          </div>
-          <div class="cache-info">
-            <span>已缓存: <strong id="statCacheSize">0</strong> / 2000</span>
-            <span>命中率: <strong id="statHitRate">0%</strong></span>
-          </div>
-        </div>
-
-        <div class="stats-actions">
-          <button class="btn btn-secondary" id="resetTodayBtn">重置今日统计</button>
-          <button class="btn btn-danger" id="resetAllBtn">重置所有数据</button>
-        </div>
-      </section>
-
       <!-- 设置页面现在自动保存，无需手动保存按钮 -->
 
-      <!-- 关于 -->
-      <section id="about" class="settings-section">
-        <h2>关于 VocabMeld</h2>
-        <p class="section-desc">沉浸式语言学习 Chrome 插件</p>
+      <!-- 更多 -->
+      <section id="more" class="settings-section">
+        <h2>更多</h2>
+        <p class="section-desc">关于与数据管理</p>
 
-        <div class="about-card">
+        <!-- 关于信息 -->
+        <div class="about-card-full">
           <div class="about-logo">
-            <img src="icons/icon128.png" alt="VocabMeld" width="80" height="80">
+            <img src="icons/icon128.png" alt="VocabMeld" width="72" height="72">
           </div>
-          <div class="about-info">
-            <h3>VocabMeld</h3>
-            <p class="about-tagline">智能替换网页词汇，创造沉浸式双语学习环境</p>
-            <p class="about-version">版本 1.0.0</p>
-          </div>
-        </div>
-
-        <div class="about-section">
-          <h4>项目信息</h4>
-          <div class="about-links">
-            <a href="https://github.com/lzskyline/VocabMeld" target="_blank" class="about-link">
-              <svg viewBox="0 0 24 24" width="20" height="20">
-                <path fill="currentColor" d="M12,2A10,10 0 0,0 2,12C2,16.42 4.87,20.17 8.84,21.5C9.34,21.58 9.5,21.27 9.5,21C9.5,20.77 9.5,20.14 9.5,19.31C6.73,19.91 6.14,17.97 6.14,17.97C5.68,16.81 5.03,16.5 5.03,16.5C4.12,15.88 5.1,15.9 5.1,15.9C6.1,15.97 6.63,16.93 6.63,16.93C7.5,18.45 8.97,18 9.54,17.76C9.63,17.11 9.89,16.67 10.17,16.42C7.95,16.17 5.62,15.31 5.62,11.5C5.62,10.39 6,9.5 6.65,8.79C6.55,8.54 6.2,7.5 6.75,6.15C6.75,6.15 7.59,5.88 9.5,7.17C10.29,6.95 11.15,6.84 12,6.84C12.85,6.84 13.71,6.95 14.5,7.17C16.41,5.88 17.25,6.15 17.25,6.15C17.8,7.5 17.45,8.54 17.35,8.79C18,9.5 18.38,10.39 18.38,11.5C18.38,15.32 16.04,16.16 13.81,16.41C14.17,16.72 14.5,17.33 14.5,18.26C14.5,19.6 14.5,20.68 14.5,21C14.5,21.27 14.66,21.59 15.17,21.5C19.14,20.16 22,16.42 22,12A10,10 0 0,0 12,2Z"/>
-              </svg>
-              <span>GitHub 仓库</span>
-              <span class="about-link-url">github.com/lzskyline/VocabMeld</span>
-            </a>
-          </div>
-        </div>
-
-        <div class="about-section">
-          <h4>开发者</h4>
-          <div class="about-author">
-            <div class="author-avatar">
-              <svg viewBox="0 0 24 24" width="40" height="40">
-                <path fill="currentColor" d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z"/>
-              </svg>
+          <div class="about-content">
+            <div class="about-info">
+              <h3>VocabMeld</h3>
+              <p class="about-tagline">智能替换网页词汇，创造沉浸式双语学习环境</p>
+              <p class="about-theory">基于「可理解性输入」理论，让语言学习融入日常生活</p>
             </div>
-            <div class="author-info">
-              <span class="author-name">LzSkyline</span>
-              <a href="https://github.com/lzskyline" target="_blank" class="author-github">@lzskyline</a>
+            <div class="about-meta">
+              <a href="https://github.com/lzskyline/VocabMeld" target="_blank" class="about-link-btn">
+                <svg viewBox="0 0 24 24" width="18" height="18">
+                  <path fill="currentColor" d="M12,2A10,10 0 0,0 2,12C2,16.42 4.87,20.17 8.84,21.5C9.34,21.58 9.5,21.27 9.5,21C9.5,20.77 9.5,20.14 9.5,19.31C6.73,19.91 6.14,17.97 6.14,17.97C5.68,16.81 5.03,16.5 5.03,16.5C4.12,15.88 5.1,15.9 5.1,15.9C6.1,15.97 6.63,16.93 6.63,16.93C7.5,18.45 8.97,18 9.54,17.76C9.63,17.11 9.89,16.67 10.17,16.42C7.95,16.17 5.62,15.31 5.62,11.5C5.62,10.39 6,9.5 6.65,8.79C6.55,8.54 6.2,7.5 6.75,6.15C6.75,6.15 7.59,5.88 9.5,7.17C10.29,6.95 11.15,6.84 12,6.84C12.85,6.84 13.71,6.95 14.5,7.17C16.41,5.88 17.25,6.15 17.25,6.15C17.8,7.5 17.45,8.54 17.35,8.79C18,9.5 18.38,10.39 18.38,11.5C18.38,15.32 16.04,16.16 13.81,16.41C14.17,16.72 14.5,17.33 14.5,18.26C14.5,19.6 14.5,20.68 14.5,21C14.5,21.27 14.66,21.59 15.17,21.5C19.14,20.16 22,16.42 22,12A10,10 0 0,0 12,2Z"/>
+                </svg>
+                GitHub 仓库
+              </a>
+              <span class="about-author-tag">
+                <svg viewBox="0 0 24 24" width="14" height="14">
+                  <path fill="currentColor" d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z"/>
+                </svg>
+                <a href="https://github.com/lzskyline" target="_blank">LzSkyline</a>
+              </span>
             </div>
           </div>
         </div>
 
-        <div class="about-section">
-          <h4>技术栈</h4>
-          <div class="tech-tags">
-            <span class="tech-tag">Chrome Extension MV3</span>
-            <span class="tech-tag">Vanilla JavaScript</span>
-            <span class="tech-tag">CSS Variables</span>
-            <span class="tech-tag">OpenAI API</span>
+        <!-- 导入导出 -->
+        <div class="form-group">
+          <label>数据导入导出</label>
+          <p class="help-text">备份或迁移你的学习数据和配置</p>
+          
+          <div class="export-options">
+            <div class="export-group">
+              <h4>选择导出内容</h4>
+              <div class="checkbox-group">
+                <label class="checkbox-item">
+                  <input type="checkbox" id="exportSettings" checked>
+                  <span>配置设置（API、选项、站点规则）</span>
+                </label>
+                <label class="checkbox-item">
+                  <input type="checkbox" id="exportWords" checked>
+                  <span>词汇数据（已学会、需记忆）</span>
+                </label>
+                <label class="checkbox-item">
+                  <input type="checkbox" id="exportStats" checked>
+                  <span>统计数据</span>
+                </label>
+                <label class="checkbox-item">
+                  <input type="checkbox" id="exportCache">
+                  <span>缓存词汇（可能较大）</span>
+                </label>
+              </div>
+            </div>
+            <div class="export-actions">
+              <button class="btn btn-primary" id="exportDataBtn">
+                <svg viewBox="0 0 24 24" width="16" height="16">
+                  <path fill="currentColor" d="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z"/>
+                </svg>
+                导出数据
+              </button>
+              <button class="btn btn-secondary" id="importDataBtn">
+                <svg viewBox="0 0 24 24" width="16" height="16">
+                  <path fill="currentColor" d="M5,20H19V18H5M19,9H15V3H9V9H5L12,16L19,9Z" transform="rotate(180 12 12)"/>
+                </svg>
+                导入数据
+              </button>
+              <input type="file" id="importFileInput" accept=".json" style="display: none;">
+            </div>
           </div>
-        </div>
-
-        <div class="about-footer">
-          <p>基于「可理解性输入」理论，让语言学习融入日常生活</p>
         </div>
       </section>
     </main>
@@ -616,3 +620,4 @@
   <script src="js/options.js"></script>
 </body>
 </html>
+
