@@ -37,11 +37,39 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   }
 
-  // 加载主题
-  chrome.storage.sync.get('theme', (result) => {
+  // 内置主题配置
+  const BUILT_IN_THEMES = {
+    default: { primary: '#6366f1', tooltipWord: '#818cf8' },
+    ocean: { primary: '#0ea5e9', tooltipWord: '#38bdf8' },
+    forest: { primary: '#10b981', tooltipWord: '#34d399' },
+    sunset: { primary: '#f59e0b', tooltipWord: '#fbbf24' }
+  };
+
+  // 应用配色主题
+  function applyColorTheme(themeId, customTheme) {
+    const theme = themeId === 'custom' && customTheme ? customTheme : BUILT_IN_THEMES[themeId] || BUILT_IN_THEMES.default;
+    const root = document.documentElement;
+    
+    // 计算渐变的第二个颜色
+    const gradientEnd = theme.primary.replace('#', '');
+    const r = Math.max(0, parseInt(gradientEnd.substr(0, 2), 16) - 20);
+    const g = Math.max(0, parseInt(gradientEnd.substr(2, 2), 16) - 30);
+    const b = Math.min(255, parseInt(gradientEnd.substr(4, 2), 16) + 20);
+    const secondColor = `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+    
+    root.style.setProperty('--primary', theme.primary);
+    root.style.setProperty('--primary-light', theme.tooltipWord);
+    root.style.setProperty('--primary-dark', secondColor);
+  }
+
+  // 加载主题和配色
+  chrome.storage.sync.get(['theme', 'colorTheme', 'customTheme'], (result) => {
     const theme = result.theme || 'dark';
     document.documentElement.setAttribute('data-theme', theme);
     themeToggle.checked = theme === 'light';
+    
+    // 应用配色主题
+    applyColorTheme(result.colorTheme || 'default', result.customTheme);
   });
 
   // 加载配置和统计
@@ -244,11 +272,18 @@ document.addEventListener('DOMContentLoaded', async () => {
   // 定期刷新
   setInterval(loadData, 5000);
 
-  // 监听主题变化
+  // 监听主题和配色变化
   chrome.storage.onChanged.addListener((changes, areaName) => {
-    if (areaName === 'sync' && changes.theme) {
-      document.documentElement.setAttribute('data-theme', changes.theme.newValue);
-      themeToggle.checked = changes.theme.newValue === 'light';
+    if (areaName === 'sync') {
+      if (changes.theme) {
+        document.documentElement.setAttribute('data-theme', changes.theme.newValue);
+        themeToggle.checked = changes.theme.newValue === 'light';
+      }
+      if (changes.colorTheme || changes.customTheme) {
+        chrome.storage.sync.get(['colorTheme', 'customTheme'], (result) => {
+          applyColorTheme(result.colorTheme || 'default', result.customTheme);
+        });
+      }
     }
   });
 });

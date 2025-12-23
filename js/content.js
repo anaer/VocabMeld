@@ -19,6 +19,34 @@
   const SKIP_CLASSES = ['vocabmeld-translated', 'vocabmeld-tooltip', 'hljs', 'code', 'syntax'];
   const DEFAULT_CACHE_MAX_SIZE = 2000;
 
+  // 内置主题配置
+  const BUILT_IN_THEMES = {
+    default: {
+      primary: '#6366f1',
+      underline: 'rgba(99,102,241,0.5)',
+      hoverBg: 'rgba(99,102,241,0.15)',
+      tooltipWord: '#818cf8'
+    },
+    ocean: {
+      primary: '#0ea5e9',
+      underline: 'rgba(14,165,233,0.5)',
+      hoverBg: 'rgba(14,165,233,0.15)',
+      tooltipWord: '#38bdf8'
+    },
+    forest: {
+      primary: '#10b981',
+      underline: 'rgba(16,185,129,0.5)',
+      hoverBg: 'rgba(16,185,129,0.15)',
+      tooltipWord: '#34d399'
+    },
+    sunset: {
+      primary: '#f59e0b',
+      underline: 'rgba(245,158,11,0.5)',
+      hoverBg: 'rgba(245,158,11,0.15)',
+      tooltipWord: '#fbbf24'
+    }
+  };
+
   // ============ 状态管理 ============
   let config = null;
   let isProcessing = false;
@@ -149,11 +177,70 @@
           excludedSites: result.excludedSites || result.blacklist || [],
           allowedSites: result.allowedSites || [],
           learnedWords: result.learnedWords || [],
-          memorizeList: result.memorizeList || []
+          memorizeList: result.memorizeList || [],
+          colorTheme: result.colorTheme || 'default',
+          customTheme: result.customTheme || null
         };
+        
+        // 应用主题
+        applyColorTheme(config.colorTheme, config.customTheme);
+        
         resolve(config);
       });
     });
+  }
+
+  // 应用颜色主题
+  function applyColorTheme(themeId, customTheme) {
+    const theme = themeId === 'custom' && customTheme ? customTheme : BUILT_IN_THEMES[themeId] || BUILT_IN_THEMES.default;
+    
+    // 创建或更新样式元素
+    let styleEl = document.getElementById('vocabmeld-theme-style');
+    if (!styleEl) {
+      styleEl = document.createElement('style');
+      styleEl.id = 'vocabmeld-theme-style';
+      document.head.appendChild(styleEl);
+    }
+    
+    // 计算渐变的第二个颜色（稍微偏紫/深一点）
+    const gradientEnd = theme.primary.replace('#', '');
+    const r = Math.max(0, parseInt(gradientEnd.substr(0, 2), 16) - 20);
+    const g = Math.max(0, parseInt(gradientEnd.substr(2, 2), 16) - 30);
+    const b = Math.min(255, parseInt(gradientEnd.substr(4, 2), 16) + 20);
+    const secondColor = `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+    
+    // 卡片背景色（自定义主题可以设置）
+    const cardBgDark = theme.cardBg || '#1e293b';
+    const cardBgLight = theme.cardBgLight || '#ffffff';
+    const cardBorderDark = theme.cardBorder || '#334155';
+    const cardBorderLight = theme.cardBorderLight || '#e2e8f0';
+    
+    // 暗色主题使用 tooltipWord（浅色版本），亮色主题使用 primary
+    styleEl.textContent = `
+      .vocabmeld-translated {
+        border-bottom-color: ${theme.underline} !important;
+      }
+      .vocabmeld-translated:hover {
+        background: ${theme.hoverBg} !important;
+      }
+      .vocabmeld-tooltip .vocabmeld-tooltip-word {
+        color: ${theme.tooltipWord} !important;
+      }
+      .vocabmeld-tooltip[data-theme="light"] .vocabmeld-tooltip-word {
+        color: ${theme.primary} !important;
+      }
+      .vocabmeld-tooltip .vocabmeld-tooltip-badge {
+        background: linear-gradient(135deg, ${theme.primary}, ${secondColor}) !important;
+      }
+      .vocabmeld-tooltip {
+        background: ${cardBgDark} !important;
+        border-color: ${cardBorderDark} !important;
+      }
+      .vocabmeld-tooltip[data-theme="light"] {
+        background: ${cardBgLight} !important;
+        border-color: ${cardBorderLight} !important;
+      }
+    `;
   }
 
   // 更新 UI 元素的主题

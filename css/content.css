@@ -19,15 +19,14 @@
 
 /* 明亮主题适配 */
 .vocabmeld-tooltip[data-theme="light"] {
-  background: #ffffff !important;
+  /* 背景色和边框色由 content.js 动态生成以支持配色切换 */
+  background: #ffffff;
   color: #1e293b !important;
-  border: 1px solid #e2e8f0 !important;
+  border: 1px solid #e2e8f0;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1), 0 0 1px rgba(0, 0, 0, 0.05) !important;
 }
 
-.vocabmeld-tooltip[data-theme="light"] .vocabmeld-tooltip-word {
-  color: #4f46e5 !important;
-}
+/* 亮色主题下的卡片标题颜色由 content.js 动态生成，以支持配色切换 */
 
 .vocabmeld-tooltip[data-theme="light"] .vocabmeld-tooltip-phonetic {
   color: #64748b !important;
@@ -133,7 +132,8 @@
 .vocabmeld-tooltip {
   position: absolute !important;
   z-index: 2147483647 !important;
-  background: #1e293b !important;
+  /* 背景色和边框色由 content.js 动态生成以支持配色切换 */
+  background: #1e293b;
   color: #f8fafc !important;
   border-radius: 10px !important;
   padding: 12px 16px !important;
@@ -142,7 +142,7 @@
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3), 0 0 1px rgba(255, 255, 255, 0.1) !important;
   max-width: 300px !important;
   min-width: 180px !important;
-  border: 1px solid #334155 !important;
+  border: 1px solid #334155;
   box-sizing: border-box !important;
   line-height: 1.5 !important;
   text-align: left !important;
@@ -172,7 +172,8 @@
 .vocabmeld-tooltip .vocabmeld-tooltip-badge {
   display: inline-block !important;
   padding: 2px 8px !important;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6) !important;
+  /* 背景色由 content.js 动态生成以支持配色切换 */
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
   color: white !important;
   font-size: 11px !important;
   font-weight: 600 !important;
