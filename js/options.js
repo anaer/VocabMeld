@@ -102,9 +102,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     learnedList: document.getElementById('learnedList'),
     memorizeList: document.getElementById('memorizeList'),
     cachedList: document.getElementById('cachedList'),
-    learnedTabCount: document.getElementById('learnedTabCount'),
-    memorizeTabCount: document.getElementById('memorizeTabCount'),
-    cachedTabCount: document.getElementById('cachedTabCount'),
     clearLearnedBtn: document.getElementById('clearLearnedBtn'),
     clearMemorizeBtn: document.getElementById('clearMemorizeBtn'),
     clearCacheBtn: document.getElementById('clearCacheBtn'),
@@ -970,10 +967,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       difficulty: w.difficulty || 'B1' // 如果需记忆词汇有难度信息则使用，否则默认B1
     }));
     
-    // 更新计数
-    elements.learnedTabCount.textContent = learnedWords.length;
-    elements.memorizeTabCount.textContent = memorizeList.length;
-    
     // 应用搜索和筛选
     filterLearnedWords();
     filterMemorizeWords();
@@ -981,8 +974,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     // 加载缓存
     chrome.storage.local.get('vocabmeld_word_cache', (data) => {
       const cache = data.vocabmeld_word_cache || [];
-      elements.cachedTabCount.textContent = cache.length;
-      
       const cacheWords = cache.map(item => {
         const [word] = item.key.split(':');
         return { 
@@ -1107,9 +1098,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       filtered = filtered.filter(w => w.difficulty === selectedDifficulty);
     }
     
-    // 更新计数
-    elements.learnedTabCount.textContent = `${filtered.length} / ${allLearnedWords.length}`;
-    
     // 渲染筛选后的列表
     renderWordList(elements.learnedList, filtered, 'learned');
   }
@@ -1134,9 +1122,6 @@ document.addEventListener('DOMContentLoaded', async () => {
       filtered = filtered.filter(w => w.difficulty === selectedDifficulty);
     }
     
-    // 更新计数
-    elements.memorizeTabCount.textContent = `${filtered.length} / ${allMemorizeWords.length}`;
-    
     // 渲染筛选后的列表
     renderWordList(elements.memorizeList, filtered, 'memorize');
   }
@@ -1160,9 +1145,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (selectedDifficulty !== 'all') {
       filtered = filtered.filter(w => w.difficulty === selectedDifficulty);
     }
-    
-    // 更新计数
-    elements.cachedTabCount.textContent = `${filtered.length} / ${allCachedWords.length}`;
     
     // 渲染筛选后的列表
     renderWordList(elements.cachedList, filtered, 'cached');
