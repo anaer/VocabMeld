@@ -1628,8 +1628,6 @@ ${originalWord}
         // 立即标记为正在处理，防止重复添加到队列
         container.setAttribute('data-vocabmeld-processing', 'true');
 
-        if (container.hasAttribute('data-vocabmeld-processed')) continue;
-
         const text = getTextContent(container);
         if (!text || text.length < 50) continue;
         if (isCodeText(text)) continue;
