@@ -117,22 +117,6 @@
 
 ---
 
-## ☕ 打赏
-
-本项目完全开源，如果对你有帮助，欢迎打赏支持！
-
-<p align="center">
-  <img src="assets/wechat.jpg" alt="微信打赏" width="300">
-</p>
-
----
-
-## 📈 Star History
-
-[![Star History Chart](https://api.star-history.com/svg?repos=lzskyline/VocabMeld&type=Date)](https://star-history.com/#lzskyline/VocabMeld&Date)
-
----
-
 ## 📄 开源许可
 
 本项目基于 [MIT License](LICENSE) 开源。

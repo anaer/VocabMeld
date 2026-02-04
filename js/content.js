@@ -400,7 +400,7 @@
   }
 
   async function addToMemorizeList(word) {
-    if (!word || !word.trim()) {
+    if (!word?.trim()) {
       console.warn('[VocabMeld] Invalid word for memorize list:', word);
       return;
     }
@@ -980,10 +980,10 @@ ${filteredText}
           }, response => {
             if (chrome.runtime.lastError) {
               reject(new Error(chrome.runtime.lastError.message));
-            } else if (!response?.success) {
-              reject(new Error(response?.error || 'API request failed'));
-            } else {
+            } else if (response?.success) {
               resolve(response.data);
+            } else {
+              reject(new Error(response?.error || 'API request failed'));
             }
           });
         });
@@ -1015,6 +1015,11 @@ ${filteredText}
           const isEnglish = /^[a-zA-Z]+$/.test(item.original);
           if (isEnglish && item.original.length < 5) {
             continue; // 跳过小于5个字符的英文单词
+          }
+
+          // 跳过原文与译文相同的项
+          if (item.original.toLowerCase() === item.translation.toLowerCase()) {
+            continue;
           }
 
           const key = `${item.original.toLowerCase()}:${sourceLang}:${targetLang}`;
@@ -2448,17 +2453,7 @@ ${originalWord}
         // 添加学习语言（translation）而不是原文
         const wordToAdd = translation || original;
 
-        if (!isActive) {
-          addToMemorizeList(wordToAdd);
-          memorizeBtn.classList.add('active');
-          memorizeBtn.title = '已在记忆列表';
-          // 更新图标为实心
-          memorizeBtn.innerHTML = `
-            <svg viewBox="0 0 24 24" width="16" height="16">
-              <path fill="currentColor" d="M12,21.35L10.55,20.03C5.4,15.36 2,12.27 2,8.5C2,5.41 4.42,3 7.5,3C9.24,3 10.91,3.81 12,5.08C13.09,3.81 14.76,3 16.5,3C19.58,3 22,5.41 22,8.5C22,12.27 18.6,15.36 13.45,20.03L12,21.35Z"/>
-            </svg>
-          `;
-        } else {
+        if (isActive) {
           removeFromMemorizeList(wordToAdd);
           memorizeBtn.classList.remove('active');
           memorizeBtn.title = '添加到记忆';
@@ -2466,6 +2461,16 @@ ${originalWord}
           memorizeBtn.innerHTML = `
             <svg viewBox="0 0 24 24" width="16" height="16">
               <path fill="currentColor" d="M12.1,18.55L12,18.65L11.89,18.55C7.14,14.24 4,11.39 4,8.5C4,6.5 5.5,5 7.5,5C9.04,5 10.54,6 11.07,7.36H12.93C13.46,6 14.96,5 16.5,5C18.5,5 20,6.5 20,8.5C20,11.39 16.86,14.24 12.1,18.55M16.5,3C14.76,3 13.09,3.81 12,5.08C10.91,3.81 9.24,3 7.5,3C4.42,3 2,5.41 2,8.5C2,12.27 5.4,15.36 10.55,20.03L12,21.35L13.45,20.03C18.6,15.36 22,12.27 22,8.5C22,5.41 19.58,3 16.5,3Z"/>
+            </svg>
+          `;
+        } else {
+          addToMemorizeList(wordToAdd);
+          memorizeBtn.classList.add('active');
+          memorizeBtn.title = '已在记忆列表';
+          // 更新图标为实心
+          memorizeBtn.innerHTML = `
+            <svg viewBox="0 0 24 24" width="16" height="16">
+              <path fill="currentColor" d="M12,21.35L10.55,20.03C5.4,15.36 2,12.27 2,8.5C2,5.41 4.42,3 7.5,3C9.24,3 10.91,3.81 12,5.08C13.09,3.81 14.76,3 16.5,3C19.58,3 22,5.41 22,8.5C22,12.27 18.6,15.36 13.45,20.03L12,21.35Z"/>
             </svg>
           `;
         }
@@ -2495,7 +2500,6 @@ ${originalWord}
         e.stopPropagation();
         const original = retranslateBtn.getAttribute('data-original');
         retranslateWithContext(original);
-        return;
       }
     });
 

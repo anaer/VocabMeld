@@ -209,7 +209,7 @@ async function callApiWithRetry(body, maxRetries = 3, debugText = '') {
 // 安装/更新时初始化
 chrome.runtime.onInstalled.addListener((details) => {
   console.log('[VocabMeld] Extension installed/updated:', details.reason);
-  
+
   // 设置默认配置
   if (details.reason === 'install') {
     chrome.storage.sync.set({
@@ -237,14 +237,14 @@ chrome.runtime.onInstalled.addListener((details) => {
     // 词汇列表存储在 local 中，避免 sync 的 8KB 限制
     chrome.storage.local.set({ learnedWords: [], memorizeList: [] });
   }
-  
+
   // 更新时迁移：将 sync 中的词汇列表迁移到 local
   if (details.reason === 'update') {
     chrome.storage.sync.get(['learnedWords', 'memorizeList'], (syncResult) => {
       chrome.storage.local.get(['learnedWords', 'memorizeList'], (localResult) => {
         const updates = {};
         const toRemove = [];
-        
+
         // 迁移 learnedWords
         if (syncResult.learnedWords && syncResult.learnedWords.length > 0) {
           const localWords = localResult.learnedWords || [];
@@ -256,7 +256,7 @@ chrome.runtime.onInstalled.addListener((details) => {
           updates.learnedWords = Array.from(mergedMap.values());
           toRemove.push('learnedWords');
         }
-        
+
         // 迁移 memorizeList
         if (syncResult.memorizeList && syncResult.memorizeList.length > 0) {
           const localList = localResult.memorizeList || [];
@@ -267,7 +267,7 @@ chrome.runtime.onInstalled.addListener((details) => {
           updates.memorizeList = Array.from(mergedMap.values());
           toRemove.push('memorizeList');
         }
-        
+
         if (Object.keys(updates).length > 0) {
           chrome.storage.local.set(updates, () => {
             chrome.storage.sync.remove(toRemove, () => {
@@ -278,7 +278,7 @@ chrome.runtime.onInstalled.addListener((details) => {
       });
     });
   }
-  
+
   // 创建右键菜单
   createContextMenus();
 });
@@ -291,7 +291,7 @@ function createContextMenus() {
       title: '添加到需记忆列表',
       contexts: ['selection']
     });
-    
+
     chrome.contextMenus.create({
       id: 'vocabmeld-process-page',
       title: '处理当前页面',
@@ -314,7 +314,7 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
       });
     }
   }
-  
+
   if (info.menuItemId === 'vocabmeld-process-page') {
     chrome.tabs.sendMessage(tab.id, { action: 'processPage' });
   }
@@ -333,26 +333,26 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.action === 'speak') {
     const text = message.text;
     const lang = message.lang || 'en-US';
-    
+
     // 获取用户配置的语音设置
     chrome.storage.sync.get(['ttsRate', 'ttsVoice'], (settings) => {
-      const rate = settings.ttsRate || 1.0;
+      const rate = settings.ttsRate || 1;
       const preferredVoice = settings.ttsVoice || '';
-      
+
       // 先停止之前的朗读
       chrome.tts.stop();
-      
+
       const options = {
         lang: lang,
         rate: rate,
         pitch: 1.0
       };
-      
+
       // 如果用户指定了声音，使用用户的选择
       if (preferredVoice) {
         options.voiceName = preferredVoice;
       }
-      
+
       chrome.tts.speak(text, options, () => {
         if (chrome.runtime.lastError) {
           console.error('[VocabMeld] TTS Error:', chrome.runtime.lastError.message);
@@ -362,10 +362,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         }
       });
     });
-    
+
     return true;
   }
-  
+
   // 获取可用的 TTS 声音列表
   if (message.action === 'getVoices') {
     chrome.tts.getVoices((voices) => {
@@ -373,7 +373,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     });
     return true;
   }
-  
+
   // 测试 API 连接
   if (message.action === 'testApi') {
     testApiConnection(message.endpoint, message.apiKey, message.model)
@@ -381,7 +381,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       .catch(error => sendResponse({ success: false, message: error.message }));
     return true;
   }
-  
+
   // 发送 API 请求（避免 CORS 问题）- 使用多节点轮询
   if (message.action === 'apiRequest') {
     callApiWithRetry(message.body, 3, message._debugText)
@@ -397,7 +397,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       .catch(error => sendResponse({ success: false, error: error.message }));
     return true;
   }
-  
+
   // 通用 fetch 代理（用于第三方 API，避免 CORS）
   if (message.action === 'fetchProxy') {
     fetch(message.url)
@@ -409,7 +409,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       .catch(error => sendResponse({ success: false, error: error.message }));
     return true;
   }
-  
+
   // 获取统计数据
   if (message.action === 'getStats') {
     chrome.storage.sync.get([
@@ -425,7 +425,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           syncResult.lastResetDate = today;
           chrome.storage.sync.set({ todayWords: 0, lastResetDate: today });
         }
-        
+
         sendResponse({
           totalWords: syncResult.totalWords || 0,
           todayWords: syncResult.todayWords || 0,
@@ -438,7 +438,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     });
     return true;
   }
-  
+
   // 获取缓存统计
   if (message.action === 'getCacheStats') {
     chrome.storage.sync.get('cacheMaxSize', (syncResult) => {
@@ -453,7 +453,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     });
     return true;
   }
-  
+
   // 清空缓存
   if (message.action === 'clearCache') {
     chrome.storage.local.remove('vocabmeld_word_cache', () => {
@@ -463,7 +463,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     });
     return true;
   }
-  
+
   // 清空已学会词汇
   if (message.action === 'clearLearnedWords') {
     chrome.storage.local.set({ learnedWords: [] }, () => {
@@ -471,7 +471,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     });
     return true;
   }
-  
+
   // 清空需记忆列表
   if (message.action === 'clearMemorizeList') {
     chrome.storage.local.set({ memorizeList: [] }, () => {
