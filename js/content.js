@@ -179,7 +179,7 @@
       // 检查英文单词
       const words = sentence.match(/\b[a-zA-Z]{5,}\b/g) || [];
       const hasEnglishMatch = words.some(word => targetWordSet.has(word.toLowerCase()));
-      
+
       // 检查中文短语（直接检查是否包含目标词汇）
       const hasChineseMatch = Array.from(targetWordSet).some(word => {
         // 只检查中文词汇
@@ -188,7 +188,7 @@
         }
         return false;
       });
-      
+
       return hasEnglishMatch || hasChineseMatch;
     });
 
@@ -233,7 +233,7 @@
             customTheme: syncResult.customTheme || null,
             customizedThemes: syncResult.customizedThemes || null
           };
-          
+
           // 加载保存的自定义主题配置
           if (config.customizedThemes) {
             ['ocean', 'forest', 'sunset'].forEach(themeId => {
@@ -242,10 +242,10 @@
               }
             });
           }
-          
+
           // 应用主题
           applyColorTheme(config.colorTheme, config.customTheme);
-          
+
           resolve(config);
         });
       });
@@ -255,7 +255,7 @@
   // 应用颜色主题
   function applyColorTheme(themeId, customTheme) {
     const theme = themeId === 'custom' && customTheme ? customTheme : BUILT_IN_THEMES[themeId] || BUILT_IN_THEMES.default;
-    
+
     // 创建或更新样式元素
     let styleEl = document.getElementById('vocabmeld-theme-style');
     if (!styleEl) {
@@ -263,29 +263,29 @@
       styleEl.id = 'vocabmeld-theme-style';
       document.head.appendChild(styleEl);
     }
-    
+
     // 计算渐变的第二个颜色（稍微偏紫/深一点）
     const gradientEnd = theme.primary.replace('#', '');
     const r = Math.max(0, parseInt(gradientEnd.substr(0, 2), 16) - 20);
     const g = Math.max(0, parseInt(gradientEnd.substr(2, 2), 16) - 30);
     const b = Math.min(255, parseInt(gradientEnd.substr(4, 2), 16) + 20);
     const secondColor = `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
-    
+
     // 卡片背景色（自定义主题可以设置）
     const cardBgDark = theme.cardBg || '#1e293b';
     const cardBgLight = theme.cardBgLight || '#ffffff';
     const cardBorderDark = theme.cardBorder || '#334155';
     const cardBorderLight = theme.cardBorderLight || '#e2e8f0';
-    
+
     // 下划线样式
     const underlineWidth = theme.underlineWidth || '2px';
     const underlineStyle = theme.underlineStyle || 'solid';
-    
+
     // 暗色主题使用 tooltipWord（浅色版本），亮色主题使用 primary
     // 文本颜色（空值表示保持原样式）
     const wordColorStyle = theme.wordColor ? `color: ${theme.wordColor} !important;` : '';
     const originalColorStyle = theme.originalColor ? `color: ${theme.originalColor} !important;` : '';
-    
+
     styleEl.textContent = `
       .vocabmeld-translated {
         border-bottom: ${underlineWidth} ${underlineStyle} ${theme.underline} !important;
@@ -388,9 +388,9 @@
     const whitelist = config.learnedWords || [];
     const exists = whitelist.some(w => w.original === original || w.word === translation);
     if (!exists) {
-      whitelist.push({ 
-        original, 
-        word: translation, 
+      whitelist.push({
+        original,
+        word: translation,
         addedAt: Date.now(),
         difficulty: difficulty || 'B1'
       });
@@ -457,11 +457,11 @@
 
   async function removeFromMemorizeList(word) {
     if (!word || !word.trim()) return;
-    
+
     const trimmedWord = word.trim();
     const list = config.memorizeList || [];
     const newList = list.filter(w => w.word !== trimmedWord);
-    
+
     if (newList.length !== list.length) {
       config.memorizeList = newList;
       await new Promise(resolve => chrome.storage.local.set({ memorizeList: newList }, resolve));
@@ -514,7 +514,7 @@
   function findTextContainers(root) {
     const containers = [];
     const blockTags = ['P', 'DIV', 'ARTICLE', 'SECTION', 'LI', 'TD', 'TH', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'SPAN', 'BLOCKQUOTE'];
-    
+
     const walker = document.createTreeWalker(root, NodeFilter.SHOW_ELEMENT, {
       acceptNode: (node) => {
         if (shouldSkipNode(node)) return NodeFilter.FILTER_REJECT;
@@ -554,7 +554,7 @@
   function getPageSegments(viewportOnly = false, margin = 500) {
     const segments = [];
     let viewportTop = 0, viewportBottom = Infinity;
-    
+
     if (viewportOnly) {
       viewportTop = window.scrollY - margin;
       viewportBottom = window.scrollY + window.innerHeight + margin;
@@ -595,11 +595,11 @@
     wrapper.setAttribute('data-translation', translation);
     wrapper.setAttribute('data-phonetic', phonetic || '');
     wrapper.setAttribute('data-difficulty', difficulty || 'B1');
-    
+
     // 根据配置的样式生成不同的HTML
     const style = config.translationStyle || 'translation-original';
     let innerHTML = '';
-    
+
     switch (style) {
       case 'translation-only':
         // 只显示译文
@@ -615,7 +615,7 @@
         innerHTML = `<span class="vocabmeld-word">${translation}</span><span class="vocabmeld-original">(${original})</span>`;
         break;
     }
-    
+
     wrapper.innerHTML = innerHTML;
     return wrapper;
   }
@@ -624,7 +624,7 @@
     if (!element || !replacements?.length) return 0;
 
     let count = 0;
-    
+
     // 获取文本节点的辅助函数（每次调用都重新获取，确保节点引用有效）
     function getTextNodes() {
       const nodes = [];
@@ -632,21 +632,21 @@
         acceptNode: (node) => {
           const parent = node.parentElement;
           if (!parent) return NodeFilter.FILTER_REJECT;
-          
+
           // 跳过已翻译的元素
           if (parent.classList?.contains('vocabmeld-translated')) {
             return NodeFilter.FILTER_REJECT;
           }
-          
+
           // 跳过不应该处理的节点类型
           if (SKIP_TAGS.includes(parent.tagName)) return NodeFilter.FILTER_REJECT;
-          
+
           // 跳过代码相关的类
           const classList = parent.className?.toString() || '';
           if (SKIP_CLASSES.some(cls => classList.includes(cls) && cls !== 'vocabmeld-translated')) {
             return NodeFilter.FILTER_REJECT;
           }
-          
+
           // 跳过隐藏元素（使用 offsetParent 快速检测）
           if (parent.offsetParent === null && parent.tagName !== 'BODY' && parent.tagName !== 'HTML') {
             const position = parent.style.position;
@@ -654,17 +654,17 @@
               return NodeFilter.FILTER_REJECT;
             }
           }
-          
+
           // 跳过可编辑元素
           if (parent.isContentEditable) return NodeFilter.FILTER_REJECT;
-          
+
           const text = node.textContent.trim();
           if (text.length === 0) return NodeFilter.FILTER_REJECT;
-          
+
           return NodeFilter.FILTER_ACCEPT;
         }
       });
-      
+
       let node;
       while (node = walker.nextNode()) {
         nodes.push(node);
@@ -678,39 +678,39 @@
     for (const replacement of sortedReplacements) {
       const { original, translation, phonetic, difficulty } = replacement;
       const lowerOriginal = original.toLowerCase();
-      
+
       // 每次替换后重新获取文本节点，因为DOM结构已改变
       const textNodes = getTextNodes();
-      
+
       for (let i = 0; i < textNodes.length; i++) {
         const textNode = textNodes[i];
-        
+
         // 检查节点是否仍然有效（DOM可能已改变）
         if (!textNode.parentElement || !element.contains(textNode)) {
           continue;
         }
-        
+
         const text = textNode.textContent;
         const lowerText = text.toLowerCase();
-        
+
         // 检查文本节点是否包含目标单词
         if (!lowerText.includes(lowerOriginal)) continue;
-        
+
         // 使用单词边界匹配，确保匹配完整单词
         const escapedOriginal = original.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
         // 匹配单词边界（包括中文标点）
         const regex = new RegExp(`(^|[^\\w\\u4e00-\\u9fff])${escapedOriginal}([^\\w\\u4e00-\\u9fff]|$)`, 'i');
-        
+
         let match = regex.exec(text);
         let startIndex = match ? match.index + match[1].length : text.toLowerCase().indexOf(lowerOriginal);
-        
+
         if (startIndex === -1) continue;
 
         try {
           const range = document.createRange();
           range.setStart(textNode, startIndex);
           range.setEnd(textNode, startIndex + original.length);
-          
+
           const rangeContent = range.toString();
           if (rangeContent.toLowerCase() !== lowerOriginal) continue;
 
@@ -724,14 +724,14 @@
             }
             parent = parent.parentElement;
           }
-          
+
           if (isAlreadyReplaced) continue;
 
           const wrapper = createReplacementElement(original, translation, phonetic, difficulty);
           range.deleteContents();
           range.insertNode(wrapper);
           count++;
-          
+
           // 找到匹配后立即跳出，因为DOM结构已改变，需要重新获取节点
           break;
         } catch (e) {
@@ -781,7 +781,7 @@
 
     const detectedLang = detectLanguage(text);
     const isNative = isNativeLanguage(detectedLang, config.nativeLanguage);
-    
+
     // 根据处理模式检查是否需要处理该文本
     // native-only: 只处理母语网页（将母语翻译为目标语言）
     // target-only: 只处理目标语言网页（将目标语言翻译为母语）
@@ -792,22 +792,22 @@
     if (config.processMode === 'target-only' && isNative) {
       return { immediate: [], async: null };
     }
-    
+
     const sourceLang = isNative ? config.nativeLanguage : detectedLang;
     const targetLang = isNative ? config.targetLanguage : config.nativeLanguage;
     const maxReplacements = INTENSITY_CONFIG[config.intensity]?.maxPerParagraph || 8;
 
     // 检查缓存 - 只检查有意义的词汇（排除常见停用词）
     const stopWords = new Set(['the', 'a', 'an', 'is', 'are', 'was', 'were', 'be', 'been', 'being', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could', 'should', 'may', 'might', 'must', 'shall', 'can', 'need', 'dare', 'ought', 'used', 'to', 'of', 'in', 'for', 'on', 'with', 'at', 'by', 'from', 'as', 'into', 'through', 'during', 'before', 'after', 'above', 'below', 'between', 'under', 'again', 'further', 'then', 'once', 'here', 'there', 'when', 'where', 'why', 'how', 'all', 'each', 'few', 'more', 'most', 'other', 'some', 'such', 'no', 'nor', 'not', 'only', 'own', 'same', 'so', 'than', 'too', 'very', 'just', 'and', 'but', 'if', 'or', 'because', 'until', 'while', 'this', 'that', 'these', 'those', 'what', 'which', 'who', 'whom', 'i', 'you', 'he', 'she', 'it', 'we', 'they', 'me', 'him', 'her', 'us', 'them', 'my', 'your', 'his', 'its', 'our', 'their']);
-    
+
     const words = (text.match(/\b[a-zA-Z]{5,}\b/g) || []).filter(w => !stopWords.has(w.toLowerCase()));
-    
+
     // 对于中文，提取有意义的短语（2-4个字符）
     // 注意：这里只提取用于缓存检查，实际翻译由AI决定返回哪些词汇
     // 提取2-4个字符的短语（避免提取过多无意义的片段）
     const chinesePhrases = [];
     const chineseText = text.match(/[\u4e00-\u9fff]+/g) || [];
-    
+
     // 从中文文本中提取2-4个字符的短语（滑动窗口，步长为1）
     for (const phrase of chineseText) {
       if (phrase.length >= 2) {
@@ -820,7 +820,7 @@
         }
       }
     }
-    
+
     const allWords = [...new Set([...words, ...chinesePhrases])];
 
     const cached = [];
@@ -839,16 +839,16 @@
         uncached.push(word);
       }
     }
-    
+
     // 额外检查：检查文本中是否包含已缓存的词汇（用于处理AI返回的词汇与提取不一致的情况）
     // 只检查中文词汇，因为英文词汇已经通过上面的逻辑检查了
     const lowerText = text.toLowerCase();
     for (const [key, value] of wordCache) {
       const [cachedWord, cachedSourceLang, cachedTargetLang] = key.split(':');
       // 只检查相同语言对的缓存，且只检查中文词汇（2个字符以上）
-      if (cachedSourceLang === sourceLang && 
-          cachedTargetLang === targetLang && 
-          /[\u4e00-\u9fff]/.test(cachedWord) && 
+      if (cachedSourceLang === sourceLang &&
+          cachedTargetLang === targetLang &&
+          /[\u4e00-\u9fff]/.test(cachedWord) &&
           cachedWord.length >= 2) {
         const lowerCachedWord = cachedWord.toLowerCase();
         // 检查是否已经在cached列表中
@@ -858,9 +858,9 @@
             // 找到词汇在文本中的位置
             const idx = text.toLowerCase().indexOf(lowerCachedWord);
             if (idx >= 0) {
-              cached.push({ 
-                word: text.substring(idx, idx + cachedWord.length), 
-                ...value 
+              cached.push({
+                word: text.substring(idx, idx + cachedWord.length),
+                ...value
               });
               cachedWordsSet.add(lowerCachedWord);
             }
@@ -871,28 +871,28 @@
 
     // 获取已学会单词列表
     const learnedWordsSet = new Set((config.learnedWords || []).map(w => w.original.toLowerCase()));
-    
+
     // 过滤缓存结果（按难度，排除已学会单词）
     const filteredCached = cached
-      .filter(c => 
+      .filter(c =>
         isDifficultyCompatible(c.difficulty || 'B1', config.difficultyRange) &&
         !learnedWordsSet.has(c.word.toLowerCase())
       )
       .map(c => {
         const idx = text.toLowerCase().indexOf(c.word.toLowerCase());
-        return { 
-          original: c.word, 
-          translation: c.translation, 
-          phonetic: c.phonetic, 
-          difficulty: c.difficulty, 
-          position: idx >= 0 ? idx : 0, 
-          fromCache: true 
+        return {
+          original: c.word,
+          translation: c.translation,
+          phonetic: c.phonetic,
+          difficulty: c.difficulty,
+          position: idx >= 0 ? idx : 0,
+          fromCache: true
         };
       });
 
     // 立即返回缓存结果（立即显示）
     const immediateResults = filteredCached.slice(0, maxReplacements);
-    
+
     // 更新统计
     if (immediateResults.length > 0) {
       updateStats({ cacheHits: immediateResults.length, cacheMisses: 0 });
@@ -909,7 +909,7 @@
     // 判断是否需要限制异步替换数量
     const cacheSatisfied = immediateResults.length >= maxReplacements;
     const textTooShort = filteredText.trim().length < 50;
-    
+
     // 如果文本太短，不需要调用API
     if (textTooShort) {
       return { immediate: immediateResults, async: null };
@@ -917,19 +917,19 @@
 
     // 计算还需要翻译的词汇数量
     const remainingSlots = maxReplacements - immediateResults.length;
-    
+
     // 如果缓存已满足配置，异步替换最多1个词；否则按剩余槽位计算
     const maxAsyncReplacements = cacheSatisfied ? 1 : remainingSlots;
-    
+
     // 如果不需要异步替换，直接返回
     if (maxAsyncReplacements <= 0) {
       return { immediate: immediateResults, async: null };
     }
-    
+
     // 动态计算AI应该返回的词汇数量（通常是配置值的1.5-2倍，让AI有选择空间）
     // 但如果缓存已满足或文本极少，限制AI返回数量
-    const aiTargetCount = cacheSatisfied 
-      ? 1 
+    const aiTargetCount = cacheSatisfied
+      ? 1
       : Math.max(maxAsyncReplacements, Math.ceil(maxReplacements * 1.5));
 
     // 异步调用 API，处理未缓存的词汇（不阻塞立即返回）
@@ -945,7 +945,7 @@
 ## 规则：
 1. 选择约 ${aiTargetCount} 个词汇（实际返回数量可以根据文本内容灵活调整，但不要超过 ${maxReplacements * 2} 个）
 2. 仅选择 ${difficultyRangeLabel} 难度范围（CEFR）的词汇，跳过更简单或更困难的内容
-3. 优先选择：有学习价值且贴合上下文的词汇
+3. 优先选择：有学习价值且贴合上下文的词汇, 优先返回单词, 其次是短语，避免返回整句或过长内容
 4. 翻译方向：从 ${sourceLang} 翻译到 ${targetLang}
 5. 翻译倾向：结合上下文只翻译成最合适的词汇，而不是多个含义
 6. 不要翻译专有名词、缩写、数字、代码等内容，也不要重复翻译已经是${targetLang}的内容。
@@ -990,7 +990,7 @@ ${filteredText}
 
         const data = apiResponse;
         const content = data.choices?.[0]?.message?.content || '[]';
-        
+
         let allResults = [];
         try {
           allResults = JSON.parse(content);
@@ -1016,19 +1016,19 @@ ${filteredText}
           if (isEnglish && item.original.length < 5) {
             continue; // 跳过小于5个字符的英文单词
           }
-          
+
           const key = `${item.original.toLowerCase()}:${sourceLang}:${targetLang}`;
           // 如果已存在，先删除（LRU）
           if (wordCache.has(key)) {
             wordCache.delete(key);
           }
-          
+
           // 如果达到上限，删除最早的项
           while (wordCache.size >= (config?.cacheMaxSize || DEFAULT_CACHE_MAX_SIZE)) {
             const firstKey = wordCache.keys().next().value;
             wordCache.delete(firstKey);
           }
-          
+
           // 添加新项
           wordCache.set(key, {
             translation: item.translation,
@@ -1073,8 +1073,8 @@ ${filteredText}
         const immediateWords = new Set(immediateResults.map(r => r.original.toLowerCase()));
         const currentLearnedWords = new Set((config.learnedWords || []).map(w => w.original.toLowerCase()));
         const cachedResults = cached
-          .filter(c => 
-            !immediateWords.has(c.word.toLowerCase()) && 
+          .filter(c =>
+            !immediateWords.has(c.word.toLowerCase()) &&
             !correctedResults.some(r => r.original.toLowerCase() === c.word.toLowerCase()) &&
             !currentLearnedWords.has(c.word.toLowerCase()) &&
             isDifficultyCompatible(c.difficulty || 'B1', config.difficultyRange)
@@ -1083,7 +1083,7 @@ ${filteredText}
             const idx = text.toLowerCase().indexOf(c.word.toLowerCase());
             return { original: c.word, translation: c.translation, phonetic: c.phonetic, difficulty: c.difficulty, position: idx, fromCache: true };
           });
-        
+
         // API 结果也要过滤已学会单词
         const filteredCorrectedResults = correctedResults.filter(r => !currentLearnedWords.has(r.original.toLowerCase()));
 
@@ -1211,19 +1211,19 @@ ${uncached.join(', ')}
           if (isEnglish && item.original.length < 5) {
             continue; // 跳过小于5个字符的英文单词
           }
-          
+
           const key = `${item.original.toLowerCase()}:${sourceLang}:${targetLang}`;
           // 如果已存在，先删除（LRU）
           if (wordCache.has(key)) {
             wordCache.delete(key);
           }
-          
+
           // 如果达到上限，删除最早的项
           while (wordCache.size >= (config?.cacheMaxSize || DEFAULT_CACHE_MAX_SIZE)) {
             const firstKey = wordCache.keys().next().value;
             wordCache.delete(firstKey);
           }
-          
+
           // 添加新项
           wordCache.set(key, {
             translation: item.translation,
@@ -1254,12 +1254,12 @@ ${uncached.join(', ')}
       showToast('请先配置 API');
       return;
     }
-    
+
     // 找到包含该单词的元素，获取上下文
     const elements = document.querySelectorAll('.vocabmeld-translated');
     let contextSentence = '';
     let targetElement = null;
-    
+
     for (const el of elements) {
       if (el.getAttribute('data-original')?.toLowerCase() === originalWord.toLowerCase()) {
         targetElement = el;
@@ -1271,19 +1271,19 @@ ${uncached.join(', ')}
         break;
       }
     }
-    
+
     if (!contextSentence) {
       showToast('无法获取上下文');
       return;
     }
-    
+
     showToast('正在重新翻译...');
-    
+
     const detectedLang = detectLanguage(originalWord);
     const isNative = isNativeLanguage(detectedLang, config.nativeLanguage);
     const sourceLang = isNative ? config.nativeLanguage : detectedLang;
     const targetLang = isNative ? config.targetLanguage : config.nativeLanguage;
-    
+
     try {
       const prompt = `你是一个语言学习助手。请根据上下文语境翻译单词。
 
@@ -1323,29 +1323,29 @@ ${originalWord}
         }, response => {
           if (chrome.runtime.lastError) {
             reject(new Error(chrome.runtime.lastError.message));
-          } else if (!response?.success) {
-            reject(new Error(response?.error || 'API request failed'));
-          } else {
+          } else if (response?.success) {
             resolve(response.data);
+          } else {
+            reject(new Error(response?.error || 'API request failed'));
           }
         });
       });
 
       const content = apiResponse.choices?.[0]?.message?.content || '';
       let result = null;
-      
+
       try {
         result = JSON.parse(content);
       } catch {
         const jsonMatch = content.match(/\{[\s\S]*\}/);
         if (jsonMatch) result = JSON.parse(jsonMatch[0]);
       }
-      
+
       if (!result?.translation) {
         showToast('翻译失败');
         return;
       }
-      
+
       // 更新翻译缓存（先删除旧的，再写入新的）
       const key = `${originalWord.toLowerCase()}:${sourceLang}:${targetLang}`;
       if (wordCache.has(key)) {
@@ -1357,7 +1357,7 @@ ${originalWord}
         difficulty: result.difficulty || 'B1'
       });
       await saveWordCache();
-      
+
       // 清除旧的词典缓存并重新获取
       const dictionaryType = config.dictionaryType || 'zh-en';
       const dictCacheKey = `${originalWord.toLowerCase()}_${dictionaryType}`;
@@ -1369,14 +1369,14 @@ ${originalWord}
       }
       // 后台重新获取词典数据
       fetchDictionaryData(originalWord).catch(() => {});
-      
+
       // 更新页面上所有相同单词的显示
       document.querySelectorAll('.vocabmeld-translated').forEach(el => {
         if (el.getAttribute('data-original')?.toLowerCase() === originalWord.toLowerCase()) {
           el.setAttribute('data-translation', result.translation);
           el.setAttribute('data-phonetic', result.phonetic || '');
           el.setAttribute('data-difficulty', result.difficulty || 'B1');
-          
+
           // 更新显示内容
           const style = config.translationStyle || 'translation-original';
           let innerHTML = '';
@@ -1393,10 +1393,10 @@ ${originalWord}
           el.innerHTML = innerHTML;
         }
       });
-      
+
       hideTooltip();
       showToast(`已更新翻译: ${result.translation}`);
-      
+
     } catch (error) {
       console.error('[VocabMeld] Retranslate error:', error);
       showToast('重新翻译失败');
@@ -1427,16 +1427,16 @@ ${originalWord}
         // 跳过不应该处理的节点类型
         const parent = node.parentElement;
         if (!parent) return NodeFilter.FILTER_REJECT;
-        
+
         // 跳过脚本、样式等标签
         if (SKIP_TAGS.includes(parent.tagName)) return NodeFilter.FILTER_REJECT;
-        
+
         // 跳过代码相关的类
         const classList = parent.className?.toString() || '';
         if (SKIP_CLASSES.some(cls => classList.includes(cls) && cls !== 'vocabmeld-translated')) {
           return NodeFilter.FILTER_REJECT;
         }
-        
+
         // 跳过隐藏元素（使用 offsetParent 快速检测）
         if (parent.offsetParent === null && parent.tagName !== 'BODY' && parent.tagName !== 'HTML') {
           const position = parent.style.position;
@@ -1444,16 +1444,16 @@ ${originalWord}
             return NodeFilter.FILTER_REJECT;
           }
         }
-        
+
         // 跳过可编辑元素
         if (parent.isContentEditable) return NodeFilter.FILTER_REJECT;
-        
+
         const text = node.textContent.trim();
         if (text.length === 0) return NodeFilter.FILTER_REJECT;
-        
+
         // 跳过代码文本
         if (isCodeText(text)) return NodeFilter.FILTER_REJECT;
-        
+
         return NodeFilter.FILTER_ACCEPT;
       }
     });
@@ -1488,10 +1488,10 @@ ${originalWord}
       // 获取更大的上下文（父元素的文本内容）
       const container = textNode.parentElement;
       if (!container) continue;
-      
+
       // 获取容器的完整文本内容（包括已翻译的部分）
       const containerText = getTextContent(container);
-      
+
       // 如果容器文本太短，尝试获取更大的上下文
       let contextText = containerText;
       if (contextText.length < 30) {
@@ -1504,11 +1504,11 @@ ${originalWord}
       if (contextText.length >= 10) {
         const path = getElementPath(container);
         const fingerprint = generateFingerprint(contextText, path);
-        
+
         // 检查是否已经处理过这个段落
-        const isProcessed = container.hasAttribute('data-vocabmeld-processed') || 
+        const isProcessed = container.hasAttribute('data-vocabmeld-processed') ||
                            container.closest('[data-vocabmeld-processed]');
-        
+
         segments.push({
           element: container,
           text: contextText,
@@ -1548,7 +1548,7 @@ ${originalWord}
 
       const count = applyReplacements(segment.element, replacements);
       processed += count;
-      
+
       // 后台预加载词典数据
       const wordsToFetch = replacements.map(r => r.original).concat(replacements.map(r => r.translation));
       prefetchDictionaryData(wordsToFetch);
@@ -1570,9 +1570,9 @@ ${originalWord}
     intersectionObserver = new IntersectionObserver((entries) => {
       // 检查站点规则
       if (!config?.enabled || !shouldProcessSite()) return;
-      
+
       let hasNewVisible = false;
-      
+
       for (const entry of entries) {
         if (entry.isIntersecting) {
           const container = entry.target;
@@ -1580,7 +1580,7 @@ ${originalWord}
           if (container.hasAttribute('data-vocabmeld-processed')) {
             continue;
           }
-          
+
           // 添加到待处理队列（即使已有 observing 标记，因为可能之前处理时被跳过了）
           if (!pendingContainers.has(container)) {
             pendingContainers.add(container);
@@ -1629,22 +1629,22 @@ ${originalWord}
         container.setAttribute('data-vocabmeld-processing', 'true');
 
         if (container.hasAttribute('data-vocabmeld-processed')) continue;
-        
+
         const text = getTextContent(container);
         if (!text || text.length < 50) continue;
         if (isCodeText(text)) continue;
-        
+
         const path = getElementPath(container);
         const fingerprint = generateFingerprint(text, path);
         if (processedFingerprints.has(fingerprint)) continue;
-        
+
         // 过滤白名单词汇
         let filteredText = text;
         for (const word of whitelistWords) {
           const regex = new RegExp(`\\b${word}\\b`, 'gi');
           filteredText = filteredText.replace(regex, '');
         }
-        
+
         if (filteredText.trim().length >= 30) {
           segments.push({ element: container, text: text.slice(0, 2000), filteredText, fingerprint, path });
         }
@@ -1654,7 +1654,7 @@ ${originalWord}
       for (let i = 0; i < segments.length; i += MAX_SEGMENTS_PER_REQUEST) {
         const batch = segments.slice(i, i + MAX_SEGMENTS_PER_REQUEST);
         await processBatchSegments(batch, whitelistWords);
-        
+
         // 添加请求间隔，避免触发API速率限制
         if (i + MAX_SEGMENTS_PER_REQUEST < segments.length) {
           await new Promise(resolve => setTimeout(resolve, REQUEST_INTERVAL_MS));
@@ -1662,7 +1662,7 @@ ${originalWord}
       }
     } finally {
       isProcessing = false;
-      
+
       // 如果还有待处理的容器，继续处理
       if (pendingContainers.size > 0) {
         processPendingContainers();
@@ -1764,19 +1764,19 @@ ${originalWord}
   function observeTextContainers() {
     if (!intersectionObserver) return;
     if (!config?.enabled) return;
-    
+
     // 检查站点规则
     if (!shouldProcessSite()) return;
-    
+
     const containers = findTextContainers(document.body);
     let hasVisibleUnprocessed = false;
-    
+
     for (const container of containers) {
       // 跳过已处理的容器
       if (container.hasAttribute('data-vocabmeld-processed')) {
         continue;
       }
-      
+
       // 检查是否在视口内且未被处理
       if (isInViewport(container)) {
         // 已经在视口内的容器，直接添加到待处理队列
@@ -1786,11 +1786,11 @@ ${originalWord}
           hasVisibleUnprocessed = true;
         }
       }
-      
+
       // 观察所有未处理的容器（用于后续滚动）
       intersectionObserver.observe(container);
     }
-    
+
     // 如果有可见但未处理的容器，立即触发处理
     if (hasVisibleUnprocessed && !isProcessing) {
       processPendingContainers();
@@ -1832,7 +1832,7 @@ ${originalWord}
   // ============ UI 组件 ============
   function createTooltip() {
     if (tooltip) return;
-    
+
     tooltip = document.createElement('div');
     tooltip.className = 'vocabmeld-tooltip';
     tooltip.setAttribute('data-theme', config?.theme || 'dark');
@@ -1852,12 +1852,12 @@ ${originalWord}
   async function ensureDictCacheLoaded() {
     if (persistentDictCache) return;
     if (dictCacheInitPromise) return dictCacheInitPromise;
-    
+
     dictCacheInitPromise = new Promise((resolve) => {
       chrome.storage.local.get(DICT_CACHE_STORAGE_KEY, (result) => {
         const raw = result?.[DICT_CACHE_STORAGE_KEY];
         persistentDictCache = new Map();
-        
+
         if (Array.isArray(raw)) {
           for (const item of raw) {
             if (item?.key) {
@@ -1865,17 +1865,17 @@ ${originalWord}
             }
           }
         }
-        
+
         // 限制大小
         while (persistentDictCache.size > DICT_CACHE_MAX_SIZE) {
           const firstKey = persistentDictCache.keys().next().value;
           persistentDictCache.delete(firstKey);
         }
-        
+
         resolve();
       });
     });
-    
+
     return dictCacheInitPromise;
   }
 
@@ -1885,7 +1885,7 @@ ${originalWord}
     dictPersistTimer = setTimeout(() => {
       dictPersistTimer = null;
       if (!persistentDictCache) return;
-      
+
       const data = [];
       for (const [key, value] of persistentDictCache) {
         data.push({ key, value });
@@ -1898,7 +1898,7 @@ ${originalWord}
   async function getDictCacheValue(cacheKey) {
     await ensureDictCacheLoaded();
     if (!persistentDictCache?.has(cacheKey)) return undefined;
-    
+
     const value = persistentDictCache.get(cacheKey);
     // LRU: 移动到末尾
     persistentDictCache.delete(cacheKey);
@@ -1910,7 +1910,7 @@ ${originalWord}
   async function setDictCacheValue(cacheKey, value) {
     await ensureDictCacheLoaded();
     if (!persistentDictCache) persistentDictCache = new Map();
-    
+
     if (persistentDictCache.has(cacheKey)) persistentDictCache.delete(cacheKey);
     while (persistentDictCache.size >= DICT_CACHE_MAX_SIZE) {
       const firstKey = persistentDictCache.keys().next().value;
@@ -1924,7 +1924,7 @@ ${originalWord}
   async function fetchYoudaoData(word) {
     try {
       const url = `https://dict.youdao.com/jsonapi?q=${encodeURIComponent(word)}&doctype=json`;
-      
+
       // 通过 background script 代理请求（避免 CORS）
       const response = await new Promise((resolve, reject) => {
         chrome.runtime.sendMessage({ action: 'fetchProxy', url }, (res) => {
@@ -1937,17 +1937,17 @@ ${originalWord}
           }
         });
       });
-      
+
       const ecData = response.ec?.word?.[0];
       if (!ecData) return null;
-      
+
       // 提取音标
       const phonetic = ecData.usphone ? `/${ecData.usphone}/` : (ecData.ukphone ? `/${ecData.ukphone}/` : '');
-      
+
       // 提取释义
       const meanings = [];
       const trs = ecData.trs || [];
-      
+
       for (const tr of trs.slice(0, 4)) {
         const defText = tr.tr?.[0]?.l?.i?.[0] || '';
         if (defText) {
@@ -1970,9 +1970,9 @@ ${originalWord}
           }
         }
       }
-      
+
       if (meanings.length === 0) return null;
-      
+
       return { word, phonetic, meanings };
     } catch (e) {
       console.error('[VocabMeld] Youdao fetch error:', e);
@@ -1984,7 +1984,7 @@ ${originalWord}
   async function fetchWiktionaryData(word) {
     try {
       const url = `https://en.wiktionary.org/w/api.php?action=parse&page=${encodeURIComponent(word)}&format=json&prop=text&origin=*`;
-      
+
       // 通过 background script 代理请求（与中英词典保持一致）
       const data = await new Promise((resolve, reject) => {
         chrome.runtime.sendMessage({ action: 'fetchProxy', url }, (res) => {
@@ -1997,19 +1997,19 @@ ${originalWord}
           }
         });
       });
-      
+
       if (data.error || !data.parse?.text?.['*']) return null;
-      
+
       const htmlString = data.parse.text['*'];
       const parser = new DOMParser();
       const doc = parser.parseFromString(htmlString, 'text/html');
       const contentRoot = doc.querySelector('.mw-parser-output') || doc.body;
-      
+
       // 找到 English 语言部分的范围（h2 id="English" 到下一个 h2）
       const allH2 = contentRoot.querySelectorAll('h2');
       let englishStart = null;
       let englishEnd = null;
-      
+
       for (let i = 0; i < allH2.length; i++) {
         const h2 = allH2[i];
         if (h2.id === 'English' || h2.textContent.includes('English')) {
@@ -2022,20 +2022,20 @@ ${originalWord}
           break;
         }
       }
-      
+
       if (!englishStart) return null;
-      
+
       const phoneticEl = contentRoot.querySelector('.IPA');
       const phonetic = phoneticEl?.textContent?.trim() || '';
-      
+
       const validPOS = ['Noun', 'Verb', 'Adjective', 'Adverb', 'Interjection', 'Pronoun', 'Preposition', 'Conjunction'];
       const meaningsMap = new Map();
       const headers = contentRoot.querySelectorAll('h3, h4');
-      
+
       for (const header of headers) {
         // 检查 header 是否在 English 部分内
         const headerNode = header.parentNode?.classList?.contains('mw-heading') ? header.parentNode : header;
-        
+
         // 比较 DOM 位置：header 必须在 englishStart 之后
         if (englishStart.compareDocumentPosition(headerNode) & Node.DOCUMENT_POSITION_PRECEDING) {
           continue; // header 在 englishStart 之前，跳过
@@ -2044,15 +2044,15 @@ ${originalWord}
         if (englishEnd && (englishEnd.compareDocumentPosition(headerNode) & Node.DOCUMENT_POSITION_FOLLOWING)) {
           continue; // header 在 englishEnd 之后，跳过
         }
-        
+
         const headerText = header.textContent.replace(/\[.*?\]/g, '').trim();
         const matchedPOS = validPOS.find(pos => headerText.includes(pos));
         if (!matchedPOS) continue;
-        
-        let currentNode = header.parentNode?.classList?.contains('mw-heading') 
+
+        let currentNode = header.parentNode?.classList?.contains('mw-heading')
           ? header.parentNode : header;
         let definitionList = null;
-        
+
         while (currentNode?.nextElementSibling) {
           currentNode = currentNode.nextElementSibling;
           if (currentNode.tagName === 'OL') {
@@ -2061,7 +2061,7 @@ ${originalWord}
           }
           if (['H2', 'H3', 'H4'].includes(currentNode.tagName)) break;
         }
-        
+
         if (definitionList) {
           const listItems = definitionList.querySelectorAll(':scope > li');
           for (const li of Array.from(listItems).slice(0, 3)) {
@@ -2078,13 +2078,13 @@ ${originalWord}
           }
         }
       }
-      
+
       const meanings = [];
       for (const [pos, defs] of meaningsMap) {
         if (meanings.length >= 4) break;
         if (defs.length > 0) meanings.push({ partOfSpeech: pos, definitions: defs });
       }
-      
+
       if (meanings.length === 0) return null;
       return { word, phonetic, meanings };
     } catch (e) {
@@ -2097,12 +2097,12 @@ ${originalWord}
   async function fetchDictionaryData(word, lang = null) {
     const dictionaryType = config.dictionaryType || 'en-en';
     const cacheKey = `${word.toLowerCase()}_${dictionaryType}`;
-    
+
     // 1. 检查内存缓存
     if (dictCache.has(cacheKey)) {
       return dictCache.get(cacheKey);
     }
-    
+
     // 2. 检查持久化缓存
     const persistedValue = await getDictCacheValue(cacheKey);
     if (persistedValue !== undefined) {
@@ -2112,7 +2112,7 @@ ${originalWord}
 
     try {
       let result = null;
-      
+
       if (dictionaryType === 'zh-en') {
         // 中英释义：使用有道词典
         result = await fetchYoudaoData(word);
@@ -2120,7 +2120,7 @@ ${originalWord}
         // 英英释义：使用 Wiktionary
         result = await fetchWiktionaryData(word);
       }
-      
+
       dictCache.set(cacheKey, result);
       await setDictCacheValue(cacheKey, result);
       return result;
@@ -2136,15 +2136,15 @@ ${originalWord}
   function prefetchDictionaryData(words) {
     const targetLang = config.targetLanguage || 'en';
     const dictionaryType = config.dictionaryType || 'en-en';
-    
+
     for (const word of words) {
       const wordLang = detectLanguage(word);
       // 只预加载英文单词（词典主要支持英文）
       if (wordLang !== 'en') continue;
-      
+
       const cacheKey = `${word.toLowerCase()}_${dictionaryType}`;
       if (dictCache.has(cacheKey)) continue;
-      
+
       // 后台静默加载，不阻塞
       fetchDictionaryData(word).catch(() => {});
     }
@@ -2153,10 +2153,10 @@ ${originalWord}
   // 更新tooltip的词典内容
   function updateTooltipDictionary(dictData) {
     if (!tooltip || !dictData) return;
-    
+
     const dictContainer = tooltip.querySelector('.vocabmeld-tooltip-dict');
     if (!dictContainer) return;
-    
+
     let html = '';
     for (const meaning of dictData.meanings) {
       html += `<div class="vocabmeld-dict-entry">`;
@@ -2170,13 +2170,13 @@ ${originalWord}
       }
       html += `</ul></div>`;
     }
-    
+
     dictContainer.innerHTML = html || '<div class="vocabmeld-dict-empty">暂无词典数据</div>';
   }
 
   function showTooltip(element, mouseX, mouseY) {
     if (!tooltip || !element.classList?.contains('vocabmeld-translated')) return;
-    
+
     // 如果是同一个元素且 tooltip 已显示，不重新计算位置
     if (currentTooltipElement === element && tooltip.style.display === 'block') {
       return;
@@ -2187,30 +2187,30 @@ ${originalWord}
     const translation = element.getAttribute('data-translation');
     const phonetic = element.getAttribute('data-phonetic');
     const difficulty = element.getAttribute('data-difficulty');
-    
+
     // 检查是否已在记忆列表中
-    const isInMemorizeList = (config.memorizeList || []).some(w => 
+    const isInMemorizeList = (config.memorizeList || []).some(w =>
       w.word.toLowerCase() === original.toLowerCase()
     );
-    
+
     // 判断需要查询词典的单词（目标语言）
     const targetLang = config.targetLanguage || 'en';
     const originalLang = detectLanguage(original);
     const translationLang = detectLanguage(translation);
-    
+
     // 优先查询目标语言的单词
     const isOriginalTargetLang = (originalLang === 'en' && targetLang === 'en') ||
                                   (originalLang === 'zh' && (targetLang === 'zh-CN' || targetLang === 'zh-TW')) ||
                                   (originalLang === 'ja' && targetLang === 'ja') ||
                                   (originalLang === 'ko' && targetLang === 'ko') ||
                                   (originalLang === 'en' && ['fr', 'de', 'es'].includes(targetLang));
-    
+
     const isTranslationTargetLang = (translationLang === 'en' && targetLang === 'en') ||
                                      (translationLang === 'zh' && (targetLang === 'zh-CN' || targetLang === 'zh-TW')) ||
                                      (translationLang === 'ja' && targetLang === 'ja') ||
                                      (translationLang === 'ko' && targetLang === 'ko') ||
                                      (translationLang === 'en' && ['fr', 'de', 'es'].includes(targetLang));
-    
+
     const dictWord = isOriginalTargetLang ? original : (isTranslationTargetLang ? translation : null);
 
     tooltip.innerHTML = `
@@ -2219,7 +2219,7 @@ ${originalWord}
         <span class="vocabmeld-tooltip-badge" data-difficulty="${difficulty}">${difficulty}</span>
         <button class="vocabmeld-tooltip-btn vocabmeld-btn-memorize ${isInMemorizeList ? 'active' : ''}" data-original="${original}" data-translation="${translation}" title="${isInMemorizeList ? '已在记忆列表' : '添加到记忆列表'}">
           <svg viewBox="0 0 24 24" width="16" height="16">
-            ${isInMemorizeList 
+            ${isInMemorizeList
               ? '<path fill="currentColor" d="M12,21.35L10.55,20.03C5.4,15.36 2,12.27 2,8.5C2,5.41 4.42,3 7.5,3C9.24,3 10.91,3.81 12,5.08C13.09,3.81 14.76,3 16.5,3C19.58,3 22,5.41 22,8.5C22,12.27 18.6,15.36 13.45,20.03L12,21.35Z"/>'
               : '<path fill="currentColor" d="M12.1,18.55L12,18.65L11.89,18.55C7.14,14.24 4,11.39 4,8.5C4,6.5 5.5,5 7.5,5C9.04,5 10.54,6 11.07,7.36H12.93C13.46,6 14.96,5 16.5,5C18.5,5 20,6.5 20,8.5C20,11.39 16.86,14.24 12.1,18.55M16.5,3C14.76,3 13.09,3.81 12,5.08C10.91,3.81 9.24,3 7.5,3C4.42,3 2,5.41 2,8.5C2,12.27 5.4,15.36 10.55,20.03L12,21.35L13.45,20.03C18.6,15.36 22,12.27 22,8.5C22,5.41 19.58,3 16.5,3Z"/>'
             }
@@ -2259,7 +2259,7 @@ ${originalWord}
       tempRange.setStart(caretRange.startContainer, caretRange.startOffset);
       tempRange.setEnd(caretRange.startContainer, caretRange.startOffset);
       const caretRect = tempRange.getBoundingClientRect();
-      
+
       // 找到该行的起始位置（向左扩展到行首）
       const textNode = caretRange.startContainer;
       if (textNode.nodeType === Node.TEXT_NODE) {
@@ -2290,11 +2290,11 @@ ${originalWord}
       posLeft = rect.left;
       posTop = mouseY + 16;
     }
-    
+
     tooltip.style.left = posLeft + window.scrollX + 'px';
     tooltip.style.top = posTop + window.scrollY + 2 + 'px';
     tooltip.style.display = 'block';
-    
+
     // 显示词典数据（优先从缓存获取）
     const dictionaryType = config.dictionaryType || 'en-en';
     const dictContainer = tooltip.querySelector('.vocabmeld-tooltip-dict');
@@ -2338,7 +2338,7 @@ ${originalWord}
       }, 200);
     }
   }
-  
+
   function cancelHideTooltip() {
     clearTimeout(tooltipHideTimeout);
   }
@@ -2357,7 +2357,7 @@ ${originalWord}
 
   function createSelectionPopup() {
     if (selectionPopup) return;
-    
+
     selectionPopup = document.createElement('div');
     selectionPopup.className = 'vocabmeld-selection-popup';
     selectionPopup.setAttribute('data-theme', config?.theme || 'dark');
@@ -2420,25 +2420,25 @@ ${originalWord}
         e.stopPropagation();
         const original = speakBtn.getAttribute('data-original');
         const translation = speakBtn.getAttribute('data-translation');
-        
+
         // 检测 original 是否是目标语言
         const originalLang = detectLanguage(original);
         const isOriginalTargetLang = (originalLang === 'en' && config.targetLanguage === 'en') ||
                                      (originalLang === 'zh' && (config.targetLanguage === 'zh-CN' || config.targetLanguage === 'zh-TW')) ||
                                      (originalLang === 'ja' && config.targetLanguage === 'ja') ||
                                      (originalLang === 'ko' && config.targetLanguage === 'ko');
-        
+
         const word = isOriginalTargetLang ? original : translation;
-        const lang = config.targetLanguage === 'en' ? 'en-US' : 
+        const lang = config.targetLanguage === 'en' ? 'en-US' :
                      config.targetLanguage === 'zh-CN' ? 'zh-CN' :
                      config.targetLanguage === 'zh-TW' ? 'zh-TW' :
                      config.targetLanguage === 'ja' ? 'ja-JP' :
                      config.targetLanguage === 'ko' ? 'ko-KR' : 'en-US';
-        
+
         chrome.runtime.sendMessage({ action: 'speak', text: word, lang });
         return;
       }
-      
+
       // 收藏/记忆按钮
       const memorizeBtn = e.target.closest('.vocabmeld-btn-memorize');
       if (memorizeBtn) {
@@ -2473,7 +2473,7 @@ ${originalWord}
         }
         return;
       }
-      
+
       // 已学会按钮
       const learnedBtn = e.target.closest('.vocabmeld-btn-learned');
       if (learnedBtn) {
@@ -2482,14 +2482,14 @@ ${originalWord}
         const original = learnedBtn.getAttribute('data-original');
         const translation = learnedBtn.getAttribute('data-translation');
         const difficulty = learnedBtn.getAttribute('data-difficulty') || 'B1';
-        
+
         addToWhitelist(original, translation, difficulty);
         restoreAllSameWord(original);
         hideTooltip();
         showToast(`"${original}" 已标记为已学会`);
         return;
       }
-      
+
       // 重新翻译按钮
       const retranslateBtn = e.target.closest('.vocabmeld-btn-retranslate');
       if (retranslateBtn) {
@@ -2504,21 +2504,21 @@ ${originalWord}
     // 选择文本显示添加按钮
     document.addEventListener('mouseup', (e) => {
       if (e.target.closest('.vocabmeld-selection-popup')) return;
-      
+
       // 如果关闭了选中添加功能，直接隐藏弹窗
       if (!config?.showAddMemorize) {
         if (selectionPopup) selectionPopup.style.display = 'none';
         return;
       }
-      
+
       setTimeout(() => {
         const selection = window.getSelection();
         const text = selection.toString().trim();
-        
+
         if (text && text.length > 1 && text.length < 50 && !e.target.closest('.vocabmeld-translated')) {
           const range = selection.getRangeAt(0);
           const rect = range.getBoundingClientRect();
-          
+
           selectionPopup.style.left = rect.left + window.scrollX + 'px';
           selectionPopup.style.top = rect.bottom + window.scrollY + 5 + 'px';
           selectionPopup.style.display = 'block';
@@ -2542,7 +2542,7 @@ ${originalWord}
         observeTextContainers();
       }
     }, 500));
-    
+
     mutationObserver.observe(document.body, {
       childList: true,
       subtree: true
@@ -2575,7 +2575,7 @@ ${originalWord}
             const newWords = newList
               .filter(w => !oldWords.has(w.word.toLowerCase()))
               .map(w => w.word);
-            
+
               if (newWords.length > 0 && config.enabled) {
                 // 延迟处理，确保DOM已更新
                 setTimeout(() => {
@@ -2635,15 +2635,15 @@ ${originalWord}
     await loadConfig();
     await loadWordCache();
 
-    
+
     createTooltip();
     createSelectionPopup();
-    
+
     // 初始化 IntersectionObserver
     setupIntersectionObserver();
-    
+
     setupEventListeners();
-    
+
     // 自动处理 - 使用 IntersectionObserver 懒加载
     if (config.autoProcess && config.enabled && config.apiEndpoint) {
       // 延迟启动，等待页面渲染完成
@@ -2657,7 +2657,7 @@ ${originalWord}
         observeTextContainers();
       }, 500);
     }
-    
+
   }
 
   // 启动
