@@ -1644,8 +1644,12 @@ ${originalWord}
         // 过滤白名单词汇
         let filteredText = text;
         for (const word of whitelistWords) {
-          const regex = new RegExp(`\\b${word}\\b`, 'gi');
-          filteredText = filteredText.replace(regex, '');
+            if (/[\u4e00-\u9fff]/.test(word)) {
+                filteredText = filteredText.replace(word, '');
+            } else {
+                const regex = new RegExp(`\\b${word}\\b`, 'gi');
+                filteredText = filteredText.replace(regex, '');
+            }
         }
 
         if (filteredText.trim().length >= 30) {
